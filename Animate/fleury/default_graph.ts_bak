@@ -1,0 +1,39 @@
+//默认图
+
+import data from './input_data/data.json'
+// import in_default from './input_data/in_default.txt?raw'
+// import in1 from './input_data/in?raw'
+// import in2 from './input_data/in2?raw'
+// import in3 from './input_data/in3?raw'
+
+import {Graph} from '@/lib/graph_ts'
+
+// graph_default = new Graph(in_default)
+
+function get_default_graph() {
+    let ret = []
+    for (let i = 0; i < data.length; i++) {
+        console.log(data[i])
+        let graph_default = new Graph()
+        for(let node of data[i].nodes) {
+            graph_default.addVertex(node)
+        }
+        for( let [u,v] of data[i].edges)
+            graph_default.addEdge(u,v)
+        ret.push({
+            nodes: graph_default.all_nodes,
+            edges: graph_default.all_edges,
+            name: data[i].name
+        })
+    }
+    // let graph_default = new Graph(in_default)
+    // return graph_default
+    console.log(ret)
+    return ret
+
+}
+
+const allData = get_default_graph()
+
+
+export default allData[0]

@@ -1,0 +1,89 @@
+//调用cytoscape.js库
+
+export function initCytoscape(domId,nodes,edges) {
+    return cytoscape({
+        container: document.getElementById(domId),
+        // elements: randomGraph.nodes.concat(randomGraph.edges),
+        elements: nodes.concat(edges),
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#666',
+                    'label': 'data(id)',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'color': 'black', // 结点标签颜色设为黑色  
+                    'background-color': 'white', // 结点背景色设为白色  
+                    'border-color': 'black', // 结点边框颜色设为黑色  
+                    'border-width': 3, // 结点边框宽度设为 2  
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#ccc'
+                    // 'line-color':'#210115'
+                }
+            },
+            {
+                selector: 'edge.highlight',
+                style: {
+                    'width': 3,
+                    'line-color': 'green'
+                    // 'line-color':'#210115'
+                }
+            },
+            {
+                selector: 'node.highlight',
+                style: {
+                    'color': 'white',
+                    'background-color': 'blue', // 结点背景色设为白色  
+                }
+            },
+            {
+                selector: 'node.cut',
+                style: {
+                    'color': 'black',
+                    'background-color': 'yellow', // 结点背景色设为白色  
+                    'border-style': 'dashed'  
+                }
+            },
+            {
+                selector: 'edge.back_ancestor',
+                style: {
+                    'width': 3,
+                    'line-color': 'gray',
+                    'line-style': "dashed"
+                }
+            }
+        ],
+
+        layout: {
+            // name: 'dagre',
+            // animate: true,
+            // rankDir:'BT',
+            // acyclicer: 'greedy', // If set to 'greedy'
+            name:'cose',
+            // gravity: 0.1,
+            // name:'grid',
+            animate: true,
+            idealEdgeLength: 100, // 理想边长，增大这个值会让节点间距更大  
+            nodeOverlap: 20, // 节点重叠程度  
+            refresh: 20, // 布局刷新率  
+            fit: true, // 是否自适应视图  
+            padding: 30, // 图形周围的内边距  
+            randomize: false, // 是否随机初始位置  
+            componentSpacing: 100, // 不同连通分量之间的间距，增大这个值可以让不同组的节点分得更开  
+            nodeRepulsion: 400000, // 节点之间的斥力，增大这个值会让节点相互远离  
+            edgeElasticity: 100, // 边的弹性  
+            nestingFactor: 5, // 嵌套因子  
+            // gravity: 80, // 重力，控制节点向中心聚集的程度 
+        }
+    });
+}
+
+//再生成一个图
+export function re_graph_cyto(cy,nodes,edges) {
+}
