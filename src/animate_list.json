@@ -1,0 +1,14 @@
+[
+    {
+        "name":"topsort",
+        "url":"/Animate/topsort/index.html",
+        "desc":"拓扑排序",
+        "logo":"TODO"
+    },
+    {
+        "name":"fleury",
+        "url":"/Animate/fleury/index.html",
+        "desc":"Fleury算法求欧拉迹",
+        "logo":"TODO"
+    }
+]

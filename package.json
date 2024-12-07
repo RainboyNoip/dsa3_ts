@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/cytoscape": "^3.21.8",
+    "@types/cytoscape-dagre": "^2.3.3",
     "tsx": "^4.19.2",
     "vue": "^3.5.13"
   },
@@ -19,6 +20,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "ace-builds": "^1.36.5",
     "cytoscape": "^3.30.4",
+    "cytoscape-dagre": "^2.5.0",
     "loadash": "^1.0.0",
     "naive-ui": "^2.40.3",
     "ts-node": "^10.9.2",

@@ -59,7 +59,7 @@ export class Graph {
     private edges: Edge[] = []
 
     constructor(
-        private graphType: GraphType = GraphType.undigraph
+        public graphType: GraphType = GraphType.undigraph
     ) {
         this.adjacencyList = new Map();
     }

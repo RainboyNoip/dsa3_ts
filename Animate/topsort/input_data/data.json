@@ -1,0 +1,249 @@
+[
+    {
+        "name": "数据1",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            },
+            {
+                "data": {
+                    "id": "6"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2"
+                }
+            },
+            {
+                "data": {
+                    "source": "1",
+                    "target": "3"
+                }
+            },
+            {
+                "data": {
+                    "source": "1",
+                    "target": "4"
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "2"
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "5"
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "5"
+                }
+            },
+            {
+                "data": {
+                    "source": "6",
+                    "target": "4"
+                }
+            },
+            {
+                "data": {
+                    "source": "6",
+                    "target": "5"
+                }
+            }
+        ]
+    },
+    {
+        "name": "数据2",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            },
+            {
+                "data": {
+                    "id": "6"
+                }
+            },
+            {
+                "data": {
+                    "id": "7"
+                }
+            },
+            {
+                "data": {
+                    "id": "8"
+                }
+            },
+            {
+                "data": {
+                    "id": "9"
+                }
+            },
+            {
+                "data": {
+                    "id": "10"
+                }
+            },
+            {
+                "data": {
+                    "id": "11"
+                }
+            },
+            {
+                "data": {
+                    "id": "12"
+                }
+            },
+            {
+                "data": {
+                    "id": "13"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2"
+                }
+            },
+            {
+                "data": {
+                    "source": "1",
+                    "target": "6"
+                }
+            },
+            {
+                "data": {
+                    "source": "1",
+                    "target": "7"
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "1"
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "4"
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "6"
+                }
+            },
+            {
+                "data": {
+                    "source": "6",
+                    "target": "5"
+                }
+            },
+            {
+                "data": {
+                    "source": "7",
+                    "target": "4"
+                }
+            },
+            {
+                "data": {
+                    "source": "7",
+                    "target": "10"
+                }
+            },
+            {
+                "data": {
+                    "source": "8",
+                    "target": "7"
+                }
+            },
+            {
+                "data": {
+                    "source": "9",
+                    "target": "8"
+                }
+            },
+            {
+                "data": {
+                    "source": "10",
+                    "target": "11"
+                }
+            },
+            {
+                "data": {
+                    "source": "10",
+                    "target": "12"
+                }
+            },
+            {
+                "data": {
+                    "source": "10",
+                    "target": "13"
+                }
+            },
+            {
+                "data": {
+                    "source": "12",
+                    "target": "13"
+                }
+            }
+        ]
+    }
+]

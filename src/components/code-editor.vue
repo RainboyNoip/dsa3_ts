@@ -64,7 +64,7 @@ export default {
   },
   watch: {
     hline(newVal/*,oldVal*/){
-      console.log(newVal)
+      // console.log(newVal)
       let [hs,he] = newVal
       if(hs >=0) {
         this.highlightLine(hs,he)

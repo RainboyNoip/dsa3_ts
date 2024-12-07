@@ -16,7 +16,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        main: path.resolve(__dirname, 'index.html'),
         fleury: path.resolve(__dirname, 'Animate/fleury/index.html'),
+        topsort: path.resolve(__dirname, 'Animate/topsort/index.html'),
       },
     },
   },
