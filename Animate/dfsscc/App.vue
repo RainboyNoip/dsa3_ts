@@ -130,6 +130,9 @@ export default defineComponent({
         color_list() {
             return this.dfsscc.get_frame(this.now_frame).color
         },
+        node_ids() {
+            return this.dfsscc.get_frame(this.now_frame).node_ids
+        },
         stack_list() {
             return this.dfsscc.get_frame(this.now_frame).stack
         },
@@ -175,21 +178,21 @@ export default defineComponent({
                                 <thead>
                                     <tr>
                                         <th>编号</th>
-                                        <th v-for="_,idx in color_list.slice(1)" :key="idx">{{ idx+1}}</th>
+                                        <th v-for="node in node_ids" :key="node">{{ node }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>color</td>
-                                        <th v-for="item,idx in color_list.slice(1)" :key="idx">{{ item}}</th>
+                                        <th v-for="(item,idx) in color_list" :key="node_ids[idx]">{{ item}}</th>
                                     </tr>
                                     <tr>
                                         <td>dfn</td>
-                                        <th v-for="item,idx in dfn_list.slice(1)" :key="idx">{{ item}}</th>
+                                        <th v-for="(item,idx) in dfn_list" :key="node_ids[idx]">{{ item}}</th>
                                     </tr>
                                     <tr>
                                         <td>low</td>
-                                        <th v-for="item,idx in low_list.slice(1)" :key="idx">{{ item}}</th>
+                                        <th v-for="(item,idx) in low_list" :key="node_ids[idx]">{{ item}}</th>
                                     </tr>
                                 </tbody>
                             </table>
