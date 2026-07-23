@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
 import { NButton } from 'naive-ui/es/button'
 import { NButtonGroup } from 'naive-ui/es/button-group'
 import { NProgress } from 'naive-ui/es/progress'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
 import { animationIcons } from '@/components/animation-icons'
+import LocalIcon from '@/components/local-icon.vue'
 
 const props = defineProps<{
     player: AnimationPlayer
@@ -64,7 +64,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         title="上一帧"
         @click="player.previousFrame"
       >
-        <Icon :icon="animationIcons.previous" width="15" height="15" />
+        <LocalIcon :icon="animationIcons.previous" width="15" height="15" />
       </n-button>
       <n-button
         :disabled="isAtEnd"
@@ -72,7 +72,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         :title="isPlaying ? '暂停' : '播放'"
         @click="player.togglePlay"
       >
-        <Icon
+        <LocalIcon
           :icon="playIcon"
           width="15"
           height="15"
@@ -84,14 +84,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         title="下一帧"
         @click="player.nextFrame"
       >
-        <Icon :icon="animationIcons.next" width="15" height="15" />
+        <LocalIcon :icon="animationIcons.next" width="15" height="15" />
       </n-button>
       <n-button
         aria-label="重新开始"
         title="重新开始"
         @click="player.restart"
       >
-        <Icon :icon="animationIcons.clockwise" width="15" height="15" />
+        <LocalIcon :icon="animationIcons.clockwise" width="15" height="15" />
       </n-button>
     </n-button-group>
     <input
@@ -113,7 +113,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
       title="确认跳转"
       @click="jump"
     >
-      <Icon :icon="animationIcons.enter" width="15" height="15" />
+      <LocalIcon :icon="animationIcons.enter" width="15" height="15" />
     </n-button>
     <n-progress
       class="animation-controls__progress min-w-0 flex-1"

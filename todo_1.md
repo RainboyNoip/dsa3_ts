@@ -187,7 +187,7 @@ status: in-progress
 - [x] 分析约 1.1MB 的共享 JS chunk，确认 Ace、Naive UI、Cytoscape 和 UnoCSS 的占比。
 - [x] 让 Ace 编辑器按需加载，避免首页或不需要代码面板的页面加载它。
 - [x] 检查 Naive UI 是否按组件导入并能正确 tree-shake。
-- [ ] 本地打包实际使用的 Iconify 图标，不加载远程完整图标能力。
+- [x] 本地打包实际使用的 Iconify 图标，不加载远程完整图标能力。
 - [ ] 删除未使用依赖：确认 `loadash`、`tsx`、`ts-node` 等是否仍有用途。
 - [ ] 将 `@types/*` 放入 `devDependencies`，运行时依赖只保留生产需要的包。
 

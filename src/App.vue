@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
+import LocalIcon from './components/local-icon.vue'
 import { algorithmRegistry, catalogActionIcon } from './algorithmRegistry'
 
 const baseUrl = __BASE_URL__
@@ -63,9 +63,9 @@ const algorithms = algorithmRegistry.map((item, index) => ({
           >
             <div class="algorithm-card__visual" aria-hidden="true">
               <span class="algorithm-card__index">{{ item.index }}</span>
-              <Icon class="algorithm-card__watermark" :icon="item.icon" />
+              <LocalIcon class="algorithm-card__watermark" :icon="item.icon" />
               <span class="algorithm-card__icon">
-                <Icon :icon="item.icon" />
+                <LocalIcon :icon="item.icon" />
               </span>
             </div>
 
@@ -80,7 +80,7 @@ const algorithms = algorithmRegistry.map((item, index) => ({
 
               <div class="algorithm-card__action" aria-hidden="true">
                 <span>进入演示</span>
-                <Icon :icon="catalogActionIcon" />
+                <LocalIcon :icon="catalogActionIcon" />
               </div>
             </div>
           </a>

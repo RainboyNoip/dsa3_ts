@@ -59,3 +59,14 @@ Naive UI 的组件 barrel import 已改为组件级 ESM 子路径。进一步分
 | 全部 JS raw | 1435.9 KiB | 1270.3 KiB |
 
 共享 JS raw 继续下降约 23.8%，全部 JS raw 下降约 11.5%。CI 预算同步收紧为最大单文件 580 kB、全部 JS 1.37 MB。
+
+## 本地图标结果
+
+图标定义原本已经是仓库内联的 SVG body，但仍通过 `@iconify/vue` 运行时组件渲染。新增的 `local-icon.vue` 只支持项目需要的固定 SVG 结构，不访问远程 provider，也不会解析完整 Iconify 图标集合。
+
+| 资产 | 替换前 | 替换后 |
+| --- | ---: | ---: |
+| 图标 chunk | 97.44 kB / gzip 38.07 kB | 76.3 kB / gzip 30.7 kB |
+| 全部 JS raw | 1270.3 KiB | 1251.4 KiB |
+
+所有图标 SVG 都设置固定 `viewBox`、宽高、`focusable="false"` 和 `aria-hidden="true"`；按钮与链接继续提供可访问名称。

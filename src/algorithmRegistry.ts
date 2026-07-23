@@ -1,4 +1,4 @@
-import type { IconifyIcon } from '@iconify/vue'
+import type { LocalIconDefinition } from './components/local-icon'
 
 export type AlgorithmDefinition = {
   id: string
@@ -11,7 +11,7 @@ export type AlgorithmDefinition = {
   tags: readonly string[]
   accent: `#${string}`
   tint: `#${string}`
-  icon: IconifyIcon
+  icon: LocalIconDefinition
 }
 
 const icons = {
@@ -45,9 +45,9 @@ const icons = {
     width: 24,
     height: 24,
   },
-} satisfies Record<string, IconifyIcon>
+} satisfies Record<string, LocalIconDefinition>
 
-export const catalogActionIcon: IconifyIcon = {
+export const catalogActionIcon: LocalIconDefinition = {
   body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10v10M7 17L17 7"/>',
   width: 24,
   height: 24,

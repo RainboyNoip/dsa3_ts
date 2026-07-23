@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { Icon } from '@iconify/vue'
 import { NButton } from 'naive-ui/es/button'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
 import type { Graph } from '@/lib/graph_ts'
@@ -9,6 +8,7 @@ import type { GraphInputRules } from '@/animation/graphInput'
 import AnimationControls from '@/components/animation-controls.vue'
 import AnimationInputDialog from '@/components/animation-input-dialog.vue'
 import { animationIcons } from '@/components/animation-icons'
+import LocalIcon from '@/components/local-icon.vue'
 
 type GraphOption = {
     label: string
@@ -151,7 +151,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
           title="返回首页"
           @click="goHome"
         >
-          <Icon :icon="animationIcons.back" width="16" height="16" />
+          <LocalIcon :icon="animationIcons.back" width="16" height="16" />
         </n-button>
         <h1>{{ title }}</h1>
       </div>
@@ -205,7 +205,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
             title="重新布局"
             @click="emit('relayout')"
           >
-            <Icon :icon="animationIcons.clockwise" width="16" height="16" />
+            <LocalIcon :icon="animationIcons.clockwise" width="16" height="16" />
           </n-button>
         </div>
         <div class="workspace-state-content">

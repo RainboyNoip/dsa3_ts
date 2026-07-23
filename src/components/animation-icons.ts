@@ -1,8 +1,8 @@
-import type { IconifyIcon } from '@iconify/vue'
+import type { LocalIconDefinition } from './local-icon'
 
 const stroke = 'fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"'
 
-export const animationIcons: Record<string, IconifyIcon> = {
+export const animationIcons: Record<string, LocalIconDefinition> = {
     back: {
         body: `<path ${stroke} d="M19 12H5m6-6-6 6 6 6"/>`,
         width: 24,
