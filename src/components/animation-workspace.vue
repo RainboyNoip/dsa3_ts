@@ -265,6 +265,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
 <style scoped>
 .animation-workspace {
   display: grid;
+  box-sizing: border-box;
   width: 100%;
   height: 100dvh;
   min-height: 32rem;
