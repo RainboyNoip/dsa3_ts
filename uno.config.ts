@@ -6,10 +6,6 @@ export default defineConfig({
     presetUno(),
   ],
   shortcuts: {
-    'card-1':'border-solid border-gray-300 border-1 rounded shadow shadow-coolgray'
+    'card-1': 'border-solid border-gray-300 border-1 rounded shadow shadow-coolgray',
   },
-  rules: [
-    ['font-bold', { 'font-weight': 'bold' }],
-    ['text-base', { 'font-size': '116px'}]
-  ],
 })
