@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "perf:frames": "bun build/measureAnimationMemory.ts",
     "test:e2e": "playwright test",
     "build": "vue-tsc -b && vite build",
     "build:analyze": "BUNDLE_ANALYZE=1 bun run build",

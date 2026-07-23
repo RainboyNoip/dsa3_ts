@@ -174,7 +174,7 @@ status: in-progress
 
 ## P2：帧与 Cytoscape 性能
 
-- [ ] 评估完整帧快照的内存复杂度，记录典型图规模下的帧数和占用。
+- [x] 评估完整帧快照的内存复杂度，记录典型图规模下的帧数和占用；基线脚本和结果见 `docs/animation-memory.md`。
 - [ ] 将大部分帧改为相对上一帧的增量 patch，必要时定期保存 checkpoint。
 - [x] 使用 `cy.batch()` 批量更新节点、边和 data。
 - [x] 只清理已知算法 class，不再逐个元素收集全部 class。
