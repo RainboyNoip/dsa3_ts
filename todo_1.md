@@ -5,7 +5,7 @@ tags:
   - dsa3
   - refactor
   - todo
-status: planned
+status: in-progress
 ---
 
 # DSA3 项目优化计划
@@ -49,16 +49,16 @@ status: planned
 
 相关文件：`src/lib/graph_ts.ts`
 
-- [ ] 修复 `Node.label` getter 的自递归，读取 `_label`。
-- [ ] 修复 `Edge.name()` 中有向图和无向图箭头含义颠倒的问题。
-- [ ] 明确 `addEdge()` 的不变量，确保 source 和 destination 都存在。
-- [ ] 修复 `removeVertex()`，同步更新邻接表、`nodes`、`edges` 和计数。
-- [ ] 删除未使用的 `e_cnt`，或使其与 `edge_cnt` 始终一致。
-- [ ] 修复 `graph_text_data()`，输出真实节点数、边数和边列表。
-- [ ] 加强 `readFromString()`：支持多个空格、校验数字、节点范围、边数、自环和重复边，并用返回值代替 `alert()`。
-- [ ] 修复随机图生成器：当 `numEdges < numNodes - 1` 时明确报错，不得返回超过请求数量的边。
+- [x] 修复 `Node.label` getter 的自递归，读取 `_label`。
+- [x] 修复 `Edge.name()` 中有向图和无向图箭头含义颠倒的问题。
+- [x] 明确 `addEdge()` 的不变量，确保 source 和 destination 都存在。
+- [x] 修复 `removeVertex()`，同步更新邻接表、`nodes`、`edges` 和计数。
+- [x] 删除未使用的 `e_cnt`，或使其与 `edge_cnt` 始终一致。
+- [x] 修复 `graph_text_data()`，输出真实节点数、边数和边列表。
+- [x] 加强 `readFromString()`：支持多个空格、校验数字、节点范围、边数、自环和重复边，并用返回值代替 `alert()`。
+- [x] 修复随机图生成器：当 `numEdges < numNodes - 1` 时明确报错，不得返回超过请求数量的边。
 - [ ] 明确节点 ID 策略：要么强制使用连续的 `1..n`，要么将算法全部改为遍历真实节点 ID。
-- [ ] 增加 Graph 的增删改查、解析、导出和随机图边界测试。
+- [x] 增加 Graph 的增删改查、解析、导出和随机图边界测试。
 
 ### DFS、BFS、Tarjan 与 SCC
 
@@ -73,7 +73,7 @@ status: planned
 
 ### 单元测试
 
-- [ ] 引入 Vitest，新增 `test`、`test:watch` 和 `test:coverage` 脚本。
+- [x] 引入 Vitest，新增 `test`、`test:watch` 和 `test:coverage` 脚本。
 - [ ] 每个算法测试最终结果，同时测试关键动画帧的状态不变量。
 - [ ] 将 `input_data/data.json` 中的样例作为回归测试夹具。
 - [ ] 测试 `read_raw_code()` 的成对标记、单行标记、重复标记和缺失标记。

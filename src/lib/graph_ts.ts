@@ -1,114 +1,69 @@
-//重写ts版本的 graph
+import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
-import {NodeDefinition,EdgeDefinition} from 'cytoscape'
-
-// graph 类,用于存图,对图进行一定的操作: 删除边,删除顶点,添加边,添加顶点,得到顶点的邻接点,得到顶所有点的度,得到第一个顶点,显示图的邻接表
-// export namespace graph_ts {
 export type NodeId = number
 
 export enum GraphType {
-    digraph = "digraph",
-    undigraph = "undigraph"
+    digraph = 'digraph',
+    undigraph = 'undigraph',
 }
+
+export type GraphReadResult =
+    | { ok: true }
+    | { ok: false; error: string }
 
 export class Node {
     constructor(
         public _id: NodeId,
-        public _label?: string
-    ) { }
+        public _label?: string,
+    ) {}
 
     public get id(): NodeId {
         return this._id
     }
 
     public get label(): string {
-        return this.label || this.id.toString()
+        return this._label || this.id.toString()
     }
-
-
 
     name(): string {
-        return this.label || this.id.toString()
+        return this.label
     }
-
 }
 
-// 定义边的结构
 export class Edge {
     constructor(
-        public source: NodeId, // 起始顶点
-        public target: NodeId, // 目标顶点
-        public weight: number, // 权值
-    ) {
-    }
-    name(gt: GraphType = GraphType.undigraph, withWeight: boolean = false): string {
-        let arrow = gt == GraphType.undigraph ? " -> " : " -- "
-        let ret = `${this.source}${arrow}${this.target}`
+        public source: NodeId,
+        public target: NodeId,
+        public weight: number,
+    ) {}
+
+    name(graphType: GraphType = GraphType.undigraph, withWeight = false): string {
+        const arrow = graphType === GraphType.digraph ? ' -> ' : ' -- '
+        let result = `${this.source}${arrow}${this.target}`
         if (withWeight) {
-            ret += ` [weight=${this.weight}]`
+            result += ` [weight=${this.weight}]`
         }
-        return ret
+        return result
     }
 }
 
-// 定义图的结构
 export class Graph {
-    private adjacencyList: Map<NodeId, Edge[]>; // 邻接表
-    private e_cnt = 0;
+    private adjacencyList = new Map<NodeId, Edge[]>()
     private nodes: Node[] = []
     private edges: Edge[] = []
 
-    constructor(
-        public graphType: GraphType = GraphType.undigraph
-    ) {
-        this.adjacencyList = new Map();
-    }
+    constructor(public graphType: GraphType = GraphType.undigraph) {}
 
-    public get node_cnt() :number {
+    public get node_cnt(): number {
         return this.nodes.length
     }
-    public get edge_cnt() :number {
+
+    public get edge_cnt(): number {
         return this.edges.length
     }
 
-    public clear() :void {
-        this.adjacencyList.clear()
-        this.nodes = []
-        this.edges = []
-        this.e_cnt = 0
-    }
-
-    // 从字符串中读取图
-    public readFromString(str: string): void {
-        this.clear();
-        let data = str.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0)
-            .map(line => line.split(' '))
-            .map(line => line.map(Number));
-        let [n,m] = data[0]
-        for(let i = 1;i<=n;i++) 
-            this.addVertex(i)
-        if( m != data.slice(1).length){
-            alert('格式错误,m与边数不匹配')
-            return
-        }
-        for( let [u,v,w] of data.slice(1)) {
-            this.addEdge(u,v,w || 0)
-        }
-    }
-
-    // 从cytoscape的节点和边中读取图
-    public readFromCytoscape(nodes: NodeDefinition[], edges: EdgeDefinition[]): void {
-        this.clear();
-        for (let node of nodes) {
-            this.addVertex(Number( node.data.id))
-        }
-        for (let edge of edges) {
-            this.addEdge(Number(edge.data.source),Number(edge.data.target), edge.data.weight || 0)
-        }
-        // console.log(this.size)
-        // console.log(this.getFirstVertex())
+    public get node_ids(): NodeId[] {
+        return this.nodes.map((node) => node.id)
     }
 
     public get type(): GraphType {
@@ -116,218 +71,292 @@ export class Graph {
     }
 
     public get is_directed(): boolean {
-        return this.graphType == GraphType.digraph
+        return this.graphType === GraphType.digraph
     }
 
     public get is_undirected(): boolean {
-        return this.graphType == GraphType.undigraph
+        return this.graphType === GraphType.undigraph
     }
 
-    // 添加顶点
-    addVertex(vertex: NodeId): void {
+    public clear(): void {
+        this.adjacencyList.clear()
+        this.nodes = []
+        this.edges = []
+    }
+
+    public hasVertex(vertex: NodeId): boolean {
+        return this.adjacencyList.has(vertex)
+    }
+
+    public readFromString(input: string): GraphReadResult {
+        const lines = input
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+
+        if (lines.length === 0) {
+            return { ok: false, error: '输入不能为空' }
+        }
+
+        const header = lines[0].split(/\s+/).map(Number)
+        if (header.length !== 2 || !header.every(Number.isSafeInteger)) {
+            return { ok: false, error: '首行必须包含整数 n 和 m' }
+        }
+
+        const [nodeCount, edgeCount] = header
+        if (nodeCount < 0 || edgeCount < 0) {
+            return { ok: false, error: '节点数和边数不能为负数' }
+        }
+        if (lines.length - 1 !== edgeCount) {
+            return { ok: false, error: `声明了 ${edgeCount} 条边，实际读取到 ${lines.length - 1} 条` }
+        }
+
+        const parsedEdges: Array<[NodeId, NodeId, number]> = []
+        const edgeKeys = new Set<string>()
+
+        for (let index = 1; index < lines.length; index++) {
+            const values = lines[index].split(/\s+/).map(Number)
+            if ((values.length !== 2 && values.length !== 3) || !values.every(Number.isFinite)) {
+                return { ok: false, error: `第 ${index + 1} 行必须是 u v 或 u v w` }
+            }
+
+            const [source, target, weight = 0] = values
+            if (!Number.isSafeInteger(source) || !Number.isSafeInteger(target)) {
+                return { ok: false, error: `第 ${index + 1} 行的节点 ID 必须是整数` }
+            }
+            if (source < 1 || source > nodeCount || target < 1 || target > nodeCount) {
+                return { ok: false, error: `第 ${index + 1} 行的节点 ID 超出 1..${nodeCount}` }
+            }
+            if (source === target) {
+                return { ok: false, error: `第 ${index + 1} 行包含自环 ${source} -> ${target}` }
+            }
+
+            const edgeKey = this.is_undirected
+                ? `${Math.min(source, target)}:${Math.max(source, target)}`
+                : `${source}:${target}`
+            if (edgeKeys.has(edgeKey)) {
+                return { ok: false, error: `第 ${index + 1} 行包含重复边 ${source} -> ${target}` }
+            }
+            edgeKeys.add(edgeKey)
+            parsedEdges.push([source, target, weight])
+        }
+
+        this.clear()
+        for (let vertex = 1; vertex <= nodeCount; vertex++) {
+            this.addVertex(vertex)
+        }
+        for (const [source, target, weight] of parsedEdges) {
+            this.addEdge(source, target, weight)
+        }
+        return { ok: true }
+    }
+
+    public readFromCytoscape(nodes: NodeDefinition[], edges: EdgeDefinition[]): void {
+        const nodeIds = nodes.map((node) => Number(node.data.id))
+        if (nodeIds.some((id) => !Number.isSafeInteger(id))) {
+            throw new Error('Cytoscape 节点 ID 必须是整数')
+        }
+
+        const parsedEdges = edges.map((edge) => ({
+            source: Number(edge.data.source),
+            target: Number(edge.data.target),
+            weight: Number(edge.data.weight || 0),
+        }))
+        if (parsedEdges.some((edge) =>
+            !Number.isSafeInteger(edge.source)
+            || !Number.isSafeInteger(edge.target)
+            || !Number.isFinite(edge.weight)
+        )) {
+            throw new Error('Cytoscape 边数据无效')
+        }
+
+        this.clear()
+        for (const nodeId of nodeIds) {
+            this.addVertex(nodeId)
+        }
+        for (const edge of parsedEdges) {
+            this.addEdge(edge.source, edge.target, edge.weight)
+        }
+    }
+
+    public addVertex(vertex: NodeId, label?: string): void {
+        if (!Number.isSafeInteger(vertex)) {
+            throw new Error(`节点 ID 必须是整数: ${vertex}`)
+        }
         if (!this.adjacencyList.has(vertex)) {
-            this.nodes.push(new Node(vertex))
-            this.adjacencyList.set(vertex, []);
+            this.nodes.push(new Node(vertex, label))
+            this.adjacencyList.set(vertex, [])
         }
     }
 
-    // 添加边
-    addEdge(source: NodeId, destination: NodeId, weight: number): void {
-        // 确保源和目标顶点存在
-        this.e_cnt++;
+    public addEdge(source: NodeId, destination: NodeId, weight = 0): void {
+        if (!Number.isFinite(weight)) {
+            throw new Error(`边权必须是有限数字: ${weight}`)
+        }
+
+        this.addVertex(source)
+        this.addVertex(destination)
         this.edges.push(new Edge(source, destination, weight))
-        this._addEdge(source, destination, weight)
-
-        if (this.is_undirected) { //再调用一次,添加反向边
-            this._addEdge(destination, source, weight)
-        }
-    }
-    private _addEdge(source: NodeId, destination: NodeId, weight: number): void {
-        if (!this.adjacencyList.has(source)) {
-            this.addVertex(source);
-        }
-        const edge = new Edge(source, destination, weight);
-        this.adjacencyList.get(source)?.push(edge);
-    }
-
-    // 获取一个顶点的所有邻接边
-    getEdgesStartingFrom(vertex: NodeId): Edge[] {
-        return this.adjacencyList.get(vertex) || [];
-    }
-
-
-    // 得到顶点的邻接点
-    getNeighbors(vertex: NodeId): NodeId[] {
-        return this.getEdgesStartingFrom(vertex).map(edge => edge.target);
-    }
-
-    // 打印图的信息（用于调试）
-    printGraph(): void {
-        //TODO
-        // for (let [vertex, edges] of this.adjacencyList) {
-        //     let edgeDescriptions = edges.map(e => `(${e.destination}, ${e.weight})`).join(' ');
-        //     console.log(`${vertex} --> ${edgeDescriptions}`);
-        // }
-    }
-
-    graph_text_data(): string {
-        let ret = [this.adjacencyList.size, this.adjacencyList.size]
-        return ret.join('\n')
-    }
-
-
-    //得到所有顶点的度
-    getAllDegree(): { [key: NodeId]: number } {
-        let all_degree: { [key: NodeId]: number } = {}
-        for (let [vertex, edges] of this.adjacencyList) {
-            all_degree[vertex] = edges.length
-        }
-        return all_degree
-    }
-
-    //得到最小的点
-    getFirstVertex(): NodeId | undefined {
-        let vertexIter = this.adjacencyList.keys()
-        let first = vertexIter.next().value
-        let next = vertexIter.next()
-        while (!next.done) {
-            if(first as NodeId > next.value)
-                first = next.value
-            next = vertexIter.next()
-        }
-        return first;
-    }
-
-    //删除边
-    _removeEdge(source: NodeId, destination: NodeId): void {
-        const edges = this.adjacencyList.get(source);
-        if (edges) {
-            const index = edges.findIndex(e => e.target === destination);
-            if (index !== -1) {
-                edges.splice(index, 1);
-            }
-        } else {
-            console.warn(`No edge found from ${source} to ${destination}`);
+        this.addAdjacencyEdge(source, destination, weight)
+        if (this.is_undirected) {
+            this.addAdjacencyEdge(destination, source, weight)
         }
     }
 
-    removeEdge(source: NodeId, destination: NodeId): void {
-        this._removeEdge(source, destination)
-        this.edges = this.edges.filter(e => !(e.source === source && e.target === destination))
-        if (this.is_undirected) { //再调用一次,删除反向边
-            // 在undirected graph 里虽然 edges 里只存一条边,但是我们也会正反的删除这条边
-            // 为了不会少删除,这里再次过滤
-            this.edges = this.edges.filter(e => !(e.source === destination && e.target === source))
-            this._removeEdge(destination, source)
+    private addAdjacencyEdge(source: NodeId, destination: NodeId, weight: number): void {
+        this.adjacencyList.get(source)?.push(new Edge(source, destination, weight))
+    }
+
+    public getEdgesStartingFrom(vertex: NodeId): Edge[] {
+        return this.adjacencyList.get(vertex) || []
+    }
+
+    public getNeighbors(vertex: NodeId): NodeId[] {
+        return this.getEdgesStartingFrom(vertex).map((edge) => edge.target)
+    }
+
+    public graph_text_data(): string {
+        const withWeights = this.edges.some((edge) => edge.weight !== 0)
+        const lines = this.edges.map((edge) => withWeights
+            ? `${edge.source} ${edge.target} ${edge.weight}`
+            : `${edge.source} ${edge.target}`)
+        return [`${this.node_cnt} ${this.edge_cnt}`, ...lines].join('\n')
+    }
+
+    public getAllDegree(): Record<NodeId, number> {
+        const degrees: Record<NodeId, number> = {}
+        for (const [vertex, edges] of this.adjacencyList) {
+            degrees[vertex] = edges.length
         }
+        return degrees
     }
 
-    //删除顶点
-    removeVertex(vertex: NodeId): void {
-        this.adjacencyList.delete(vertex);
-        for (let edges of this.adjacencyList.values()) {
-            edges.forEach(edge => {
-                if (edge.target === vertex) {
-                    const index = edges.indexOf(edge);
-                    if (index !== -1) {
-                        edges.splice(index, 1);
-                    }
-                }
-            });
+    public getFirstVertex(): NodeId | undefined {
+        if (this.nodes.length === 0) {
+            return undefined
         }
+        return Math.min(...this.node_ids)
     }
 
-    get all_nodes(): NodeDefinition[] {
-        let ret: NodeDefinition[] = []
-        // console.log('00--> ',this.nodes)
-        this.nodes.reduce(
-            (acc, cur) => {
-                acc.push({
-                    data : {
-                        id : cur.id.toString()
-                    }
-                })
-                return acc
-            }
-        ,ret)
-        return ret;
+    private removeAdjacencyEdge(source: NodeId, destination: NodeId): boolean {
+        const edges = this.adjacencyList.get(source)
+        if (!edges) {
+            return false
+        }
+        const index = edges.findIndex((edge) => edge.target === destination)
+        if (index === -1) {
+            return false
+        }
+        edges.splice(index, 1)
+        return true
     }
 
-    get all_edges(): EdgeDefinition[] {
-        let ret: EdgeDefinition[] = []
-        this.edges.reduce(
-            (acc, cur) => {
-                acc.push({
-                    data : {
-                        // id : cur.id.toString(),
-                        source : cur.source.toString(),
-                        target : cur.target.toString()
-                    }
-                })
-                return acc
-            }
-        ,ret)
-        return ret;
+    public removeEdge(source: NodeId, destination: NodeId): boolean {
+        const edgeIndex = this.edges.findIndex((edge) => this.is_undirected
+            ? (edge.source === source && edge.target === destination)
+                || (edge.source === destination && edge.target === source)
+            : edge.source === source && edge.target === destination)
+
+        if (edgeIndex === -1) {
+            return false
+        }
+
+        this.edges.splice(edgeIndex, 1)
+        this.removeAdjacencyEdge(source, destination)
+        if (this.is_undirected) {
+            this.removeAdjacencyEdge(destination, source)
+        }
+        return true
+    }
+
+    public removeVertex(vertex: NodeId): boolean {
+        if (!this.adjacencyList.has(vertex)) {
+            return false
+        }
+
+        this.adjacencyList.delete(vertex)
+        this.nodes = this.nodes.filter((node) => node.id !== vertex)
+        this.edges = this.edges.filter((edge) => edge.source !== vertex && edge.target !== vertex)
+        for (const [source, edges] of this.adjacencyList) {
+            this.adjacencyList.set(source, edges.filter((edge) => edge.target !== vertex))
+        }
+        return true
+    }
+
+    public get all_nodes(): NodeDefinition[] {
+        return this.nodes.map((node) => ({
+            data: {
+                id: node.id.toString(),
+                ...(node._label ? { label: node._label } : {}),
+            },
+        }))
+    }
+
+    public get all_edges(): EdgeDefinition[] {
+        return this.edges.map((edge) => ({
+            data: {
+                source: edge.source.toString(),
+                target: edge.target.toString(),
+                weight: edge.weight,
+            },
+        }))
     }
 }
 
-export function randomRange(l: number, r: number): number {
-    return Math.floor(Math.random() * (r - l + 1)) + l
+export function randomRange(left: number, right: number): number {
+    return Math.floor(Math.random() * (right - left + 1)) + left
 }
 
-/**
- * 根据点的数量和边的数量生成无向连通简单图
- * 前 n-1 条边构成一棵树，剩余边随机生成
- */
-export function generateGraphByNodeAndEdgeCount(numNodes: number, numEdges: number): { nodes: { data: { id: string } }[], edges: { data: { source: string, target: string } }[] } {
-    const nodes: { data: { id: string } }[] = []
-    const edges: { data: { source: string, target: string } }[] = []
-
-    for (let i = 1; i <= numNodes; i++) {
-        nodes.push({ data: { id: i.toString() } })
+export function generateGraphByNodeAndEdgeCount(
+    numNodes: number,
+    numEdges: number,
+): { nodes: NodeDefinition[]; edges: EdgeDefinition[] } {
+    if (!Number.isSafeInteger(numNodes) || !Number.isSafeInteger(numEdges)) {
+        throw new Error('节点数和边数必须是整数')
+    }
+    if (numNodes < 0 || numEdges < 0) {
+        throw new Error('节点数和边数不能为负数')
     }
 
-    const maxEdgeCount = numNodes * (numNodes - 1) / 2
-    if (numEdges > maxEdgeCount) {
-        throw new Error(`Cannot generate a graph with ${numNodes} nodes and ${numEdges} edges.`)
+    const minimumEdgeCount = numNodes <= 1 ? 0 : numNodes - 1
+    const maximumEdgeCount = numNodes * (numNodes - 1) / 2
+    if (numEdges < minimumEdgeCount || numEdges > maximumEdgeCount) {
+        throw new Error(`无法生成 ${numNodes} 个节点、${numEdges} 条边的无向连通简单图`)
     }
 
-    // 生成一棵树
-    let edgeCount = numNodes - 1
-    for (let i = 2; i <= numNodes; i++) {
-        edges.push({
-            data: { source: i.toString(), target: randomRange(1, i - 1).toString() }
-        })
+    const nodes: NodeDefinition[] = Array.from({ length: numNodes }, (_, index) => ({
+        data: { id: String(index + 1) },
+    }))
+    const edges: EdgeDefinition[] = []
+    const edgeKeys = new Set<string>()
+
+    const addEdge = (source: number, target: number) => {
+        const key = `${Math.min(source, target)}:${Math.max(source, target)}`
+        edgeKeys.add(key)
+        edges.push({ data: { source: String(source), target: String(target) } })
     }
 
-    while (edgeCount < numEdges) {
-        const source = randomRange(1, numNodes)
-        const target = randomRange(1, numNodes)
-        if (source === target) continue
+    for (let vertex = 2; vertex <= numNodes; vertex++) {
+        addEdge(vertex, randomRange(1, vertex - 1))
+    }
 
-        const existingEdge = edges.find(edge => (
-            (edge.data.source === source.toString() && edge.data.target === target.toString()) ||
-            (edge.data.source === target.toString() && edge.data.target === source.toString())
-        ))
-
-        if (!existingEdge) {
-            edges.push({
-                data: { source: source.toString(), target: target.toString() }
-            })
-            edgeCount++
+    const candidates: Array<[number, number]> = []
+    for (let source = 1; source <= numNodes; source++) {
+        for (let target = source + 1; target <= numNodes; target++) {
+            if (!edgeKeys.has(`${source}:${target}`)) {
+                candidates.push([source, target])
+            }
         }
+    }
+    for (let index = candidates.length - 1; index > 0; index--) {
+        const targetIndex = randomRange(0, index)
+        ;[candidates[index], candidates[targetIndex]] = [candidates[targetIndex], candidates[index]]
+    }
+
+    const additionalEdgeCount = numEdges - minimumEdgeCount
+    for (const [source, target] of candidates.slice(0, additionalEdgeCount)) {
+        addEdge(source, target)
     }
 
     return { nodes, edges }
 }
-
-// 使用示例
-// const graph = new Graph();
-// graph.addEdge('A', 'B', 10);
-// graph.addEdge('A', 'C', 5);
-// graph.addEdge('B', 'C', 2);
-// graph.addEdge('C', 'A', 1);
-
-// graph.printGraph();
-
-// } // end namespace Graph_ts
