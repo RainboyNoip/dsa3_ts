@@ -197,7 +197,7 @@ status: in-progress
 - [ ] 统一部署入口，确保只执行一次 `bun run build` 和一次 `rsync`。
 - [ ] 为部署脚本增加 `set -euo pipefail`，构建失败时禁止同步。
 - [x] 修复 `uno.config.ts` 中将 `text-base` 重定义为 `116px` 的危险规则。
-- [ ] 删除未使用的 `HelloWorld.vue`、空的 `new-code-editor.vue`、Vite/Vue 默认资源和无用备份文件。
+- [x] 删除未使用的 `HelloWorld.vue`、空的 `new-code-editor.vue`、旧 split layout、Vite/Vue 默认资源和无用备份文件。
 - [ ] 判断 `code.out`、`*.bak` 和数据生成中间文件是否应继续纳入版本控制。
 - [ ] 删除生产路径中的调试 `console.log` 和不可达代码。
 - [ ] 简化 `read_raw_code.ts` 中提前 `return` 的伪 hash 实现，并验证重复标记。
