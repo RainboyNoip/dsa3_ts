@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 
 const assetsDirectory = fileURLToPath(new URL('../dist/assets/', import.meta.url))
-const largestAssetBudget = 1_260_000
+const largestAssetBudget = 760_000
 const totalJavaScriptBudget = 1_550_000
 
 if (!existsSync(assetsDirectory)) {

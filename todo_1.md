@@ -185,7 +185,7 @@ status: in-progress
 ## P2：构建体积与依赖
 
 - [x] 分析约 1.1MB 的共享 JS chunk，确认 Ace、Naive UI、Cytoscape 和 UnoCSS 的占比。
-- [ ] 让 Ace 编辑器按需加载，避免首页或不需要代码面板的页面加载它。
+- [x] 让 Ace 编辑器按需加载，避免首页或不需要代码面板的页面加载它。
 - [ ] 检查 Naive UI 是否按组件导入并能正确 tree-shake。
 - [ ] 本地打包实际使用的 Iconify 图标，不加载远程完整图标能力。
 - [ ] 删除未使用依赖：确认 `loadash`、`tsx`、`ts-node` 等是否仍有用途。

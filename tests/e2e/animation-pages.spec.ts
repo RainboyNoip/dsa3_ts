@@ -90,6 +90,25 @@ test.describe('homepage', () => {
 })
 
 test.describe('animation pages', () => {
+    test('loads the mobile code editor only after opening the code tab', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 })
+        const editorRequests: string[] = []
+        page.on('request', (request) => {
+            const url = new URL(request.url())
+            if (url.pathname.endsWith('/src/components/code-editor.vue') && url.search === '') {
+                editorRequests.push(request.url())
+            }
+        })
+
+        await page.goto('/Animate/bfs/')
+        await page.locator('.workspace-tabs').waitFor()
+        expect(editorRequests).toEqual([])
+
+        await page.getByRole('tab', { name: '代码' }).click()
+        await expect(page.locator('.ace_editor')).toBeVisible()
+        expect(editorRequests).toHaveLength(1)
+    })
+
     test('shows algorithm limits and blocks oversized graph input', async ({ page }) => {
         await page.goto('/Animate/fleury/')
         await page.getByRole('button', { name: '输入数据' }).click()

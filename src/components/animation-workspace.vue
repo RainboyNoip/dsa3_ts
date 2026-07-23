@@ -45,7 +45,8 @@ const selectedGraphValue = computed({
 })
 const inputDialogOpen = ref(false)
 const activePanel = ref<WorkspacePanel>('graph')
-const isMobile = ref(false)
+const mobileQuery = '(max-width: 767px)'
+const isMobile = ref(typeof window !== 'undefined' && window.matchMedia(mobileQuery).matches)
 const tabList = ref<HTMLElement | null>(null)
 const workspaceMain = ref<HTMLElement | null>(null)
 const leftWidth = ref(60)
@@ -131,7 +132,7 @@ const handleResizeKeydown = (event: KeyboardEvent): void => {
 }
 
 onMounted(() => {
-    mobileMedia = window.matchMedia('(max-width: 767px)')
+    mobileMedia = window.matchMedia(mobileQuery)
     syncMobile()
     mobileMedia.addEventListener('change', syncMobile)
 })
@@ -224,7 +225,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
       </section>
 
       <section
-        v-show="!isMobile || activePanel === 'code'"
+        v-if="!isMobile || activePanel === 'code'"
         id="workspace-panel-code"
         class="workspace-panel workspace-code card-1"
         :role="isMobile ? 'tabpanel' : undefined"

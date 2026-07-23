@@ -11,7 +11,7 @@ bun run size:check
 
 `build:analyze` 使用 Rollup 的模块统计分析最大 JavaScript chunk；`size:check` 记录最终产物的 raw/gzip 大小并校验 CI 预算。
 
-## 当前基线
+## 初始基线
 
 最大共享资产是 `__uno-*.js`，最终大小为 1,198.55 kB，gzip 后为 355.89 kB。文件名来自 Vite 的 chunk 命名，不表示内容主要由 UnoCSS 构成。
 
@@ -36,3 +36,14 @@ Rollup 的未压缩 rendered module 统计如下。它用于比较依赖的相�
 2. 检查 Naive UI 的导入与 tree-shaking，避免未使用组件、date-fns locale 和 lodash 工具进入共享包。
 3. 保留 Cytoscape 作为图区域的核心依赖，先优化帧更新开销，再评估是否值得进一步拆分布局插件。
 4. UnoCSS 当前不是 JavaScript 体积瓶颈，不优先替换。
+
+## Ace 按需加载结果
+
+将代码编辑器改为异步组件后，动画入口不再通过 HTML `modulepreload` 同步加载 Ace。移动端只有切换到“代码”页签时才创建编辑器。
+
+| 资产 | 优化前 | 优化后 |
+| --- | ---: | ---: |
+| 同步共享 JS | 1,198.55 kB / gzip 355.89 kB | 721.24 kB / gzip 220.72 kB |
+| Ace 异步 JS | 包含在共享包中 | 478.42 kB / gzip 135.88 kB |
+
+同步共享 JS raw 体积下降约 39.8%。全部 JS 总量基本不变，收益来自延后下载和解析，而不是删除 Ace 功能。CI 的最大单文件预算已从 1.26 MB 收紧到 760 kB，防止 Ace 再次回到同步共享包。

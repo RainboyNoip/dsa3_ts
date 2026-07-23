@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
 import AnimationWorkspace from '@/components/animation-workspace.vue'
-import codeEditor from '@/components/code-editor.vue'
+import codeEditor from '@/components/lazy-code-editor'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
 import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
