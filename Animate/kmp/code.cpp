@@ -28,6 +28,9 @@ vector<int> build_lps(const string& pattern) {
 }
 
 int kmp_search(const string& text, const string& pattern) {
+    if (pattern.empty()) {
+        return -1;
+    }
     const vector<int> lps = build_lps(pattern);
     int i = 0;
     int j = 0;
@@ -56,6 +59,7 @@ int kmp_search(const string& text, const string& pattern) {
 
 int main() {
     string text, pattern;
-    cin >> text >> pattern;
+    getline(cin, text);
+    getline(cin, pattern);
     cout << kmp_search(text, pattern) << '\n';
 }
