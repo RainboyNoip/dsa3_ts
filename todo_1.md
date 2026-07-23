@@ -193,7 +193,7 @@ status: in-progress
 
 ## P2：工程整理
 
-- [ ] 只保留 Bun 作为包管理器，删除或停止维护 `yarn.lock`。
+- [x] 只保留 Bun 作为包管理器，删除或停止维护 `yarn.lock`。
 - [ ] 统一部署入口，确保只执行一次 `bun run build` 和一次 `rsync`。
 - [ ] 为部署脚本增加 `set -euo pipefail`，构建失败时禁止同步。
 - [x] 修复 `uno.config.ts` 中将 `text-base` 重定义为 `116px` 的危险规则。
