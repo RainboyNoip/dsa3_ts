@@ -201,7 +201,7 @@ status: in-progress
 - [x] 删除 `code.out`、`*.bak` 和调试残留；保留 `input_data/in*` 与生成脚本作为 `data.json` 的可复现源。
 - [x] 删除生产路径中的调试 `console.log` 和不可达代码。
 - [x] 简化 `read_raw_code.ts` 中提前 `return` 的伪 hash 实现，并验证重复标记。
-- [ ] 更新 README，使其覆盖全部 7 个算法、真实注册流程、测试和部署方式。
+- [x] 更新 README，使其覆盖全部 7 个算法、真实注册流程、测试和部署方式。
 - [x] 统一动画入口的 `lang="zh-CN"`、页面标题、浅色主题元数据和 favicon。
 - [x] 修复首页写死为“3 个算法演示”的 ARIA 文案，改为动态数量。
 
