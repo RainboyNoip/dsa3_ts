@@ -13,3 +13,8 @@ export function formatAnimationBudgetError(error: AnimationBudgetExceeded): stri
     }
     return `算法运行超过 ${error.limit} ms，请减少节点或边后重试`
 }
+
+export function formatAnimationRunError(error: unknown): string {
+    if (isAnimationBudgetExceeded(error)) return formatAnimationBudgetError(error)
+    return error instanceof Error ? error.message : '算法运行失败，请检查输入后重试'
+}

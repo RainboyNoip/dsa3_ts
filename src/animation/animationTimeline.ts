@@ -103,6 +103,11 @@ export class AnimationTimeline<Frame extends AnimationFrame> {
         this.currentEdges = applyPatch(this.currentEdges, edges)
     }
 
+    replace(frames: readonly Frame[]): void {
+        this.clear()
+        for (const frame of frames) this.push(frame)
+    }
+
     private assertBudget(): void {
         if (this.frames.length >= this.maxFrames) {
             throw new AnimationBudgetExceeded('max_frames', this.maxFrames, this.frames.length + 1)
