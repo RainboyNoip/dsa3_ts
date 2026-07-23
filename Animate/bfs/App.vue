@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { NFlex, NSelect } from 'naive-ui'
 import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
-import SpliteLayout from '../../src/components/splite_layout_unocss.vue'
+import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/code-editor.vue'
-import AnimationControls from '@/components/animation-controls.vue'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
 import rawCode from './code.cpp?raw'
@@ -82,46 +80,41 @@ const getInputData = (): void => {
 </script>
 
 <template>
-  <div class="container mx-auto py-2 box-border h-full">
-    <SpliteLayout>
-      <template #top>
-        <AnimationControls :player="player" />
-      </template>
+  <AnimationWorkspace
+    v-model:selected-graph="selectedGraph"
+    title="BFS 遍历"
+    :player="player"
+    :graph-options="defaultGraphSelectorOptions"
+    @input-data="getInputData"
+  >
+    <template #state>
+      <div class="mt-2" v-if="headNode !== null">
+        <span class="me-2">当前取出:</span>
+        <span class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ headNode }}</span>
+      </div>
+      <div class="mt-1">
+        <span class="me-2">队列:</span>
+        <span v-for="item in queue" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
+      </div>
+      <div class="mt-1">
+        <span class="me-2">已访问:</span>
+        <span v-for="item in visitedList" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
+      </div>
+      <div class="mt-1">
+        <span class="me-2">已弹出:</span>
+        <span v-for="item in poppedList" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
+      </div>
+      <div class="m-1 mt-3">{{ log }}</div>
+    </template>
 
-      <template #left>
-        <div class="flex flex-col h-full">
-          <div class="card-1 p-2 grow-0">
-            <n-flex>
-              <n-select v-model:value="selectedGraph" :options="defaultGraphSelectorOptions" style="width: 200px" />
-              <n-button @click="getInputData">输入数据</n-button>
-            </n-flex>
-            <div class="mt-2" v-if="headNode !== null">
-              <span class="me-2">当前取出:</span>
-              <span class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ headNode }}</span>
-            </div>
-            <div class="mt-1">
-              <span class="me-2">队列:</span>
-              <span v-for="item in queue" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
-            </div>
-            <div class="mt-1">
-              <span class="me-2">已访问:</span>
-              <span v-for="item in visitedList" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
-            </div>
-            <div class="mt-1">
-              <span class="me-2">已弹出:</span>
-              <span v-for="item in poppedList" :key="item" class="border-1 border-solid border-gray-500 rounded px-2 me-2">{{ item }}</span>
-            </div>
-            <div class="m-1 mt-3">{{ log }}</div>
-          </div>
-          <div id="cy" ref="cyContainer" class="grow"></div>
-        </div>
-      </template>
+    <template #graph>
+      <div id="cy" ref="cyContainer" class="h-full min-h-0"></div>
+    </template>
 
-      <template #right>
-        <code-editor :code="code" :hline_start="jumpLine[0]" :hline_end="jumpLine[1]" />
-      </template>
-    </SpliteLayout>
-  </div>
+    <template #code>
+      <code-editor :code="code" :hline_start="jumpLine[0]" :hline_end="jumpLine[1]" />
+    </template>
+  </AnimationWorkspace>
 </template>
 
 <style>

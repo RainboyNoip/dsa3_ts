@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { NFlex, NSelect } from 'naive-ui'
 import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
-import SpliteLayout from '../../src/components/splite_layout_unocss.vue'
+import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/code-editor.vue'
-import AnimationControls from '@/components/animation-controls.vue'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
@@ -80,60 +78,57 @@ const getInputData = (): void => {
 </script>
 
 <template>
-  <div class="container mx-auto py-2 box-border h-full">
-    <SpliteLayout>
-      <template #top>
-        <AnimationControls :player="player" />
-      </template>
+  <AnimationWorkspace
+    v-model:selected-graph="selectedGraph"
+    title="强连通分量"
+    :player="player"
+    :graph-options="defaultGraphSelectorOptions"
+    @input-data="getInputData"
+  >
+    <template #state>
+      <div class="mt-2 overflow-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>节点</th>
+              <th v-for="node in nodeIds" :key="node">{{ node }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>color</th>
+              <td v-for="(item, index) in colorList" :key="nodeIds[index]">{{ item }}</td>
+            </tr>
+            <tr>
+              <th>dfn</th>
+              <td v-for="(item, index) in dfnList" :key="nodeIds[index]">{{ item }}</td>
+            </tr>
+            <tr>
+              <th>low</th>
+              <td v-for="(item, index) in lowList" :key="nodeIds[index]">{{ item }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="m-1 mt-3">{{ log }}</div>
+    </template>
 
-      <template #left>
-        <div class="relative flex flex-col h-full">
-          <div class="card-1 p-2 grow-0">
-            <n-flex>
-              <n-select v-model:value="selectedGraph" :options="defaultGraphSelectorOptions" style="width: 200px" />
-              <n-button @click="getInputData">输入数据</n-button>
-            </n-flex>
-            <div class="mt-2 overflow-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>节点</th>
-                    <th v-for="node in nodeIds" :key="node">{{ node }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>color</th>
-                    <td v-for="(item, index) in colorList" :key="nodeIds[index]">{{ item }}</td>
-                  </tr>
-                  <tr>
-                    <th>dfn</th>
-                    <td v-for="(item, index) in dfnList" :key="nodeIds[index]">{{ item }}</td>
-                  </tr>
-                  <tr>
-                    <th>low</th>
-                    <td v-for="(item, index) in lowList" :key="nodeIds[index]">{{ item }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="m-1 mt-3">{{ log }}</div>
+    <template #graph>
+      <div class="relative h-full min-h-0">
+        <div class="card-1 absolute top-4 right-5 z-1000 bg-blueGray-100 bg-op-80 p-2">
+          <h3 class="my-2 text-center">栈</h3>
+          <div class="flex flex-col flex-col-reverse">
+            <span v-for="item in stackList" :key="item" class="border-1 border-solid border-gray-500 rounded px-5">{{ item }}</span>
           </div>
-          <div class="card-1 absolute top-80 right-5 p-2 z-1000 bg-blueGray-100 bg-op-80">
-            <h3 class="my-2 text-center">栈</h3>
-            <div class="flex flex-col flex-col-reverse">
-              <span v-for="item in stackList" :key="item" class="border-1 border-solid border-gray-500 rounded px-5">{{ item }}</span>
-            </div>
-          </div>
-          <div id="cy" ref="cyContainer" class="grow"></div>
         </div>
-      </template>
+        <div id="cy" ref="cyContainer" class="h-full min-h-0"></div>
+      </div>
+    </template>
 
-      <template #right>
-        <code-editor :code="code" :hline_start="jumpLine[0]" :hline_end="jumpLine[1]" />
-      </template>
-    </SpliteLayout>
-  </div>
+    <template #code>
+      <code-editor :code="code" :hline_start="jumpLine[0]" :hline_end="jumpLine[1]" />
+    </template>
+  </AnimationWorkspace>
 </template>
 
 <style>
