@@ -46,6 +46,9 @@ const inputDialogOpen = ref(false)
 const activePanel = ref<WorkspacePanel>('graph')
 const isMobile = ref(false)
 const tabList = ref<HTMLElement | null>(null)
+const workspaceMain = ref<HTMLElement | null>(null)
+const leftWidth = ref(60)
+const resizing = ref(false)
 let mobileMedia: MediaQueryList | null = null
 
 const goHome = (): void => {
@@ -78,6 +81,52 @@ const handleTabKeydown = (event: KeyboardEvent, panel: WorkspacePanel): void => 
 
     event.preventDefault()
     selectPanel(panels[nextIndex].id, true)
+}
+
+const splitStyle = computed(() => ({
+    '--workspace-left-width': `${leftWidth.value}%`,
+}))
+
+const setLeftWidth = (width: number): void => {
+    const availableWidth = workspaceMain.value?.getBoundingClientRect().width ?? 0
+    const maxByCodePanel = availableWidth > 0
+        ? ((availableWidth - 352 - 4) / availableWidth) * 100
+        : 75
+    leftWidth.value = Math.min(Math.min(75, maxByCodePanel), Math.max(35, width))
+}
+
+const updateLeftWidth = (clientX: number): void => {
+    if (!workspaceMain.value) return
+    const bounds = workspaceMain.value.getBoundingClientRect()
+    const nextWidth = ((clientX - bounds.left) / bounds.width) * 100
+    setLeftWidth(nextWidth)
+}
+
+const beginResize = (event: PointerEvent): void => {
+    if (!window.matchMedia('(min-width: 1024px)').matches) return
+    resizing.value = true
+    ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+    updateLeftWidth(event.clientX)
+}
+
+const moveResize = (event: PointerEvent): void => {
+    if (resizing.value) updateLeftWidth(event.clientX)
+}
+
+const finishResize = (event: PointerEvent): void => {
+    if (!resizing.value) return
+    resizing.value = false
+    const target = event.currentTarget as HTMLElement
+    if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
+}
+
+const handleResizeKeydown = (event: KeyboardEvent): void => {
+    if (event.key === 'ArrowLeft') setLeftWidth(leftWidth.value - 2)
+    else if (event.key === 'ArrowRight') setLeftWidth(leftWidth.value + 2)
+    else if (event.key === 'Home') setLeftWidth(35)
+    else if (event.key === 'End') setLeftWidth(75)
+    else return
+    event.preventDefault()
 }
 
 onMounted(() => {
@@ -131,7 +180,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
       </button>
     </div>
 
-    <main class="workspace-main">
+    <main ref="workspaceMain" class="workspace-main" :style="splitStyle">
       <section
         v-show="!isMobile || activePanel === 'state'"
         id="workspace-panel-state"
@@ -183,6 +232,23 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
       >
         <slot name="code" />
       </section>
+
+      <div
+        v-if="!isMobile"
+        class="workspace-resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="调整图与代码宽度"
+        aria-valuemin="35"
+        aria-valuemax="75"
+        :aria-valuenow="leftWidth"
+        tabindex="0"
+        @pointerdown="beginResize"
+        @pointermove="moveResize"
+        @pointerup="finishResize"
+        @pointercancel="finishResize"
+        @keydown="handleResizeKeydown"
+      ></div>
     </main>
 
     <AnimationInputDialog
@@ -277,6 +343,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
 }
 
 .workspace-main {
+  position: relative;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -318,6 +385,10 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
 .workspace-graph,
 .workspace-code {
   overflow: hidden;
+}
+
+.workspace-resizer {
+  display: none;
 }
 
 @media (max-width: 767px) {
@@ -387,9 +458,42 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
     grid-template-areas:
       "state code"
       "graph code";
-    grid-template-columns: minmax(0, 3fr) minmax(22rem, 2fr);
+    grid-template-columns: minmax(0, var(--workspace-left-width, 60%)) minmax(22rem, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
+  }
+
+  .workspace-resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--workspace-left-width, 60%);
+    z-index: 5;
+    display: block;
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+    transform: translateX(-5px);
+  }
+
+  .workspace-resizer::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 4px;
+    width: 2px;
+    background: #dfe5e2;
+    content: "";
+  }
+
+  .workspace-resizer:hover::after,
+  .workspace-resizer:focus-visible::after {
+    background: #176b5b;
+  }
+
+  .workspace-resizer:focus-visible {
+    outline: 3px solid rgb(23 107 91 / 35%);
+    outline-offset: -1px;
   }
 
   .workspace-state {
