@@ -545,6 +545,11 @@
   dependencies:
     undici-types "~6.20.0"
 
+"@types/randomcolor@^0.5.9":
+  version "0.5.9"
+  resolved "https://registry.npmmirror.com/@types/randomcolor/-/randomcolor-0.5.9.tgz#38ffddf734a83fe9b829a122f3d17004e6c36c94"
+  integrity sha512-k58cfpkK15AKn1m+oRd9nh5BnuiowhbyvBBdAzcddtARMr3xRzP0VlFaAKovSG6N6Knx08EicjPlOMzDejerrQ==
+
 "@unocss/astro@0.65.1":
   version "0.65.1"
   resolved "https://registry.npmmirror.com/@unocss/astro/-/astro-0.65.1.tgz#3237fc1b7692399bbf7d92c03cd15810b9eafadd"
@@ -1427,6 +1432,11 @@ postcss@^8.4.48, postcss@^8.4.49:
     nanoid "^3.3.7"
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
+
+randomcolor@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npmmirror.com/randomcolor/-/randomcolor-0.6.2.tgz#7a57362ae1a1278439aeed2c15e5deb8ea33f56d"
+  integrity sha512-Mn6TbyYpFgwFuQ8KJKqf3bqqY9O1y37/0jgSK/61PUxV4QfIMv0+K2ioq8DfOjkBslcjwSzRfIDEXfzA9aCx7A==
 
 readdirp@~3.6.0:
   version "3.6.0"
