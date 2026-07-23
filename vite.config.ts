@@ -13,9 +13,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, "src")
     }
   },
-  base: '/new/',  // 你可以在这里设置 base 路径
+  base: '/',
   define: {
-    __BASE_URL__: JSON.stringify('/new/'), // 自定义环境变量
+    __BASE_URL__: JSON.stringify('/'),
   },
   build: {
     rollupOptions: {
