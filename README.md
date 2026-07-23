@@ -1,6 +1,6 @@
 # DSA3 算法动画演示平台
 
-DSA3 是一个基于 Vue 3、TypeScript 和 Vite 的图算法可视化项目。每个算法都是独立的多页应用，共用播放控制、响应式工作区、Cytoscape 图渲染和 C++ 代码联动组件。界面固定使用 Light 主题。
+DSA3 是一个基于 Vue 3、TypeScript 和 Vite 的算法可视化项目。每个算法都是独立的多页应用，共用播放控制、响应式工作区和 C++ 代码联动组件；图算法使用 Cytoscape 渲染，字符串算法使用专用字符带。界面固定使用 Light 主题。
 
 ## 算法目录
 
@@ -13,6 +13,7 @@ DSA3 是一个基于 Vue 3、TypeScript 和 Vite 的图算法可视化项目。�
 | BFS 最短路 | `/Animate/bfs_shortest_path/` | 无向等权图 |
 | DFS 遍历 | `/Animate/dfs/` | 无向图 |
 | Tarjan 割点 | `/Animate/tarjan_cut/` | 无向图 |
+| KMP 字符串匹配 | `/Animate/kmp/` | 主串与模式串 |
 
 ## 本地开发
 
