@@ -199,7 +199,7 @@ status: in-progress
 - [x] 修复 `uno.config.ts` 中将 `text-base` 重定义为 `116px` 的危险规则。
 - [x] 删除未使用的 `HelloWorld.vue`、空的 `new-code-editor.vue`、旧 split layout、Vite/Vue 默认资源和无用备份文件。
 - [x] 删除 `code.out`、`*.bak` 和调试残留；保留 `input_data/in*` 与生成脚本作为 `data.json` 的可复现源。
-- [ ] 删除生产路径中的调试 `console.log` 和不可达代码。
+- [x] 删除生产路径中的调试 `console.log` 和不可达代码。
 - [ ] 简化 `read_raw_code.ts` 中提前 `return` 的伪 hash 实现，并验证重复标记。
 - [ ] 更新 README，使其覆盖全部 7 个算法、真实注册流程、测试和部署方式。
 - [x] 统一动画入口的 `lang="zh-CN"`、页面标题、浅色主题元数据和 favicon。
