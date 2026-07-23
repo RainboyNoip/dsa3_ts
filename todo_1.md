@@ -110,7 +110,7 @@ status: in-progress
 - [x] 在播放器中补充自动播放、暂停和重新开始，并迁移到所有动画页；控制栏统一由 `AnimationControls` 渲染。
 - [x] 创建 `useCytoscapeRenderer()`，管理初始化、销毁、批量更新和帧状态应用。
 - [x] 用 `onBeforeUnmount()` 销毁 Cytoscape 实例，移除模块级全局 `var CY`。
-- [ ] 将算法特有的队列、栈、dfn/low 和结果视图改成具名 slot 或配置化状态面板。
+- [x] 将算法特有的队列、栈、dfn/low 和结果视图改成 `AnimationWorkspace` 的具名 `state` / `graph` / `code` slot。
 - [x] 统一 Options API 与 Composition API，7 个动画入口均采用 `<script setup lang="ts">`。
 
 ### 单一算法注册表
