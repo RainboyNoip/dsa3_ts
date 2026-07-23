@@ -6,6 +6,7 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/lazy-code-editor'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
+import { formatAnimationBudgetError, isAnimationBudgetExceeded } from '@/animation/animationBudget'
 import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
 import rawCode from './code.cpp?raw'
@@ -50,7 +51,16 @@ const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
     if (!renderer.mount(nodes, edges)) return
     graph.value.readFromCytoscape(nodes, edges)
     dfsscc.value = new Dfsscc(graph.value as Graph, point_jump_info)
-    dfsscc.value.run_dfsscc()
+    try {
+        dfsscc.value.run_dfsscc()
+    } catch (error) {
+        if (!isAnimationBudgetExceeded(error)) throw error
+        player.setFrameCount(0)
+        player.reset()
+        applyFrame(0)
+        log.value = formatAnimationBudgetError(error)
+        return
+    }
     player.setFrameCount(dfsscc.value.frame_cnt)
     player.reset()
     applyFrame(0)

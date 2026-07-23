@@ -6,6 +6,7 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/lazy-code-editor'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
+import { formatAnimationBudgetError, isAnimationBudgetExceeded } from '@/animation/animationBudget'
 import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
 import rawCode from './code.cpp?raw'
@@ -52,7 +53,16 @@ const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
     topSort.value.clear()
     topSort.value.set_graph(graph.value as Graph)
     topSort.value.set_pointJumpInfo(point_jump_info)
-    topSort.value.run_top_sort()
+    try {
+        topSort.value.run_top_sort()
+    } catch (error) {
+        if (!isAnimationBudgetExceeded(error)) throw error
+        player.setFrameCount(0)
+        player.reset()
+        applyFrame(0)
+        log.value = formatAnimationBudgetError(error)
+        return
+    }
     player.setFrameCount(topSort.value.frame_cnt)
     player.reset()
     applyFrame(0)

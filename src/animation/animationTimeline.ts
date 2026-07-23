@@ -20,6 +20,32 @@ type StoredFrame<Frame extends AnimationFrame> = {
     edgeCheckpoint?: VisualSnapshot<EdgeState>
 }
 
+export type AnimationTimelineOptions = {
+    checkpointInterval?: number
+    maxFrames?: number
+    maxRuntimeMs?: number
+}
+
+export const DEFAULT_ANIMATION_LIMITS = {
+    maxFrames: 2000,
+    maxRuntimeMs: 1000,
+} as const
+
+export type AnimationBudgetReason = 'max_frames' | 'max_runtime'
+
+export class AnimationBudgetExceeded extends Error {
+    constructor(
+        public readonly reason: AnimationBudgetReason,
+        public readonly limit: number,
+        public readonly actual: number,
+    ) {
+        super(reason === 'max_frames'
+            ? `动画帧数超过上限 ${limit}`
+            : `动画运行时间超过上限 ${limit} ms`)
+        this.name = 'AnimationBudgetExceeded'
+    }
+}
+
 const DEFAULT_CHECKPOINT_INTERVAL = 32
 
 /**
@@ -30,8 +56,22 @@ export class AnimationTimeline<Frame extends AnimationFrame> {
     private frames: Array<StoredFrame<Frame>> = []
     private currentNodes: VisualSnapshot<NodeState> = { values: new Map(), order: [] }
     private currentEdges: VisualSnapshot<EdgeState> = { values: new Map(), order: [] }
+    private startedAt: number | null = null
+    private readonly checkpointInterval: number
+    private readonly maxFrames: number
+    private readonly maxRuntimeMs: number
 
-    constructor(private readonly checkpointInterval = DEFAULT_CHECKPOINT_INTERVAL) {}
+    constructor(options: AnimationTimelineOptions | number = {}) {
+        if (typeof options === 'number') {
+            this.checkpointInterval = normalizePositiveInteger(options, DEFAULT_CHECKPOINT_INTERVAL)
+            this.maxFrames = DEFAULT_ANIMATION_LIMITS.maxFrames
+            this.maxRuntimeMs = DEFAULT_ANIMATION_LIMITS.maxRuntimeMs
+        } else {
+            this.checkpointInterval = normalizePositiveInteger(options.checkpointInterval, DEFAULT_CHECKPOINT_INTERVAL)
+            this.maxFrames = normalizePositiveInteger(options.maxFrames, DEFAULT_ANIMATION_LIMITS.maxFrames)
+            this.maxRuntimeMs = normalizePositiveInteger(options.maxRuntimeMs, DEFAULT_ANIMATION_LIMITS.maxRuntimeMs)
+        }
+    }
 
     get length(): number {
         return this.frames.length
@@ -41,9 +81,12 @@ export class AnimationTimeline<Frame extends AnimationFrame> {
         this.frames = []
         this.currentNodes = { values: new Map(), order: [] }
         this.currentEdges = { values: new Map(), order: [] }
+        this.startedAt = performance.now()
     }
 
     push(frame: Frame): void {
+        if (this.startedAt === null) this.startedAt = performance.now()
+        this.assertBudget()
         const { nodes_state, edges_state, ...payload } = frame
         const nodes = createPatch(this.currentNodes, nodes_state, nodeKey)
         const edges = createPatch(this.currentEdges, edges_state, edgeKey)
@@ -58,6 +101,16 @@ export class AnimationTimeline<Frame extends AnimationFrame> {
         this.frames.push(stored)
         this.currentNodes = applyPatch(this.currentNodes, nodes)
         this.currentEdges = applyPatch(this.currentEdges, edges)
+    }
+
+    private assertBudget(): void {
+        if (this.frames.length >= this.maxFrames) {
+            throw new AnimationBudgetExceeded('max_frames', this.maxFrames, this.frames.length + 1)
+        }
+        const elapsed = performance.now() - (this.startedAt as number)
+        if (elapsed > this.maxRuntimeMs) {
+            throw new AnimationBudgetExceeded('max_runtime', this.maxRuntimeMs, elapsed)
+        }
     }
 
     get(index: number): Frame | undefined {
@@ -82,6 +135,10 @@ export class AnimationTimeline<Frame extends AnimationFrame> {
             edges_state: edges.order.map((key) => edges.values.get(key) as EdgeState),
         } as Frame
     }
+}
+
+function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+    return Number.isSafeInteger(value) && (value as number) > 0 ? value as number : fallback
 }
 
 function createPatch<State extends VisualState>(

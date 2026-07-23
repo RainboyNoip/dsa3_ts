@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest'
 import { GraphType } from '../src/lib/graph_ts'
-import { parseGraphInput, serializeGraphInput } from '../src/animation/graphInput'
+import { estimateAnimationFrameCount, parseGraphInput, serializeGraphInput } from '../src/animation/graphInput'
 
 describe('graph input helpers', () => {
+    it('estimates frame growth conservatively from graph size', () => {
+        expect(estimateAnimationFrameCount(10, 12)).toBe(89)
+    })
+
+    it('rejects input whose estimated frame count exceeds the rule', () => {
+        const input = [
+            '10 12',
+            '1 2', '2 3', '3 4', '4 5', '5 6', '6 7',
+            '7 8', '8 9', '9 10', '1 3', '2 4', '3 5',
+        ].join('\n')
+        expect(parseGraphInput(input, GraphType.undigraph, { maxFrames: 80 })).toEqual({
+            ok: false,
+            error: '预计动画帧数不能超过 80（当前估算为 89）',
+        })
+    })
+
     it('parses valid directed input into a graph', () => {
         const result = parseGraphInput('3 2\n1 2\n2 3 4', GraphType.digraph)
 

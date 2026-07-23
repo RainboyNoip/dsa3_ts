@@ -6,6 +6,7 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/lazy-code-editor'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
+import { formatAnimationBudgetError, isAnimationBudgetExceeded } from '@/animation/animationBudget'
 import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
 import rawCode from './code.cpp?raw'
 import defaultGraphData from './input_data/data.json'
@@ -54,7 +55,16 @@ const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
     bfs.value.clear()
     bfs.value.set_graph(graph.value as Graph)
     bfs.value.set_pointJumpInfo(point_jump_info)
-    bfs.value.run_bfs()
+    try {
+        bfs.value.run_bfs()
+    } catch (error) {
+        if (!isAnimationBudgetExceeded(error)) throw error
+        player.setFrameCount(0)
+        player.reset()
+        applyFrame(0)
+        log.value = formatAnimationBudgetError(error)
+        return
+    }
     player.setFrameCount(bfs.value.frame_cnt)
     player.reset()
     applyFrame(0)

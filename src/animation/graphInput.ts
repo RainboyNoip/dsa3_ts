@@ -11,16 +11,22 @@ export type GraphInputRules = {
     requireConnected?: boolean
     maxNodes?: number
     maxEdges?: number
+    maxFrames?: number
+    maxRuntimeMs?: number
 }
 
 export const DEFAULT_GRAPH_INPUT_LIMITS = {
     maxNodes: 80,
     maxEdges: 200,
+    maxFrames: 2000,
+    maxRuntimeMs: 1000,
 } as const satisfies GraphInputRules
 
 export const FLEURY_GRAPH_INPUT_LIMITS = {
     maxNodes: 30,
     maxEdges: 60,
+    maxFrames: 512,
+    maxRuntimeMs: 1000,
 } as const satisfies GraphInputRules
 
 export function parseGraphInput(
@@ -70,7 +76,17 @@ function validateDeclaredSize(input: string, rules: GraphInputRules): string | n
     if (rules.maxEdges !== undefined && edgeCount > rules.maxEdges) {
         return `边数不能超过 ${rules.maxEdges}（当前为 ${edgeCount}）`
     }
+    if (rules.maxFrames !== undefined) {
+        const estimatedFrames = estimateAnimationFrameCount(nodeCount, edgeCount)
+        if (estimatedFrames > rules.maxFrames) {
+            return `预计动画帧数不能超过 ${rules.maxFrames}（当前估算为 ${estimatedFrames}）`
+        }
+    }
     return null
+}
+
+export function estimateAnimationFrameCount(nodeCount: number, edgeCount: number): number {
+    return 1 + nodeCount * 4 + edgeCount * 4
 }
 
 export function serializeGraphInput(

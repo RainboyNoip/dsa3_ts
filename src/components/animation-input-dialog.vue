@@ -27,6 +27,8 @@ const limitDescription = computed(() => {
     const limits: string[] = []
     if (props.rules?.maxNodes !== undefined) limits.push(`${props.rules.maxNodes} 个节点`)
     if (props.rules?.maxEdges !== undefined) limits.push(`${props.rules.maxEdges} 条边`)
+    if (props.rules?.maxFrames !== undefined) limits.push(`${props.rules.maxFrames} 帧`)
+    if (props.rules?.maxRuntimeMs !== undefined) limits.push(`${props.rules.maxRuntimeMs} ms 运行时间`)
     return limits.length > 0 ? `当前最多支持 ${limits.join('、')}。` : ''
 })
 

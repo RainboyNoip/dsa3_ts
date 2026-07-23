@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AnimationFrame } from '../src/animation/animationTypes'
-import { AnimationTimeline } from '../src/animation/animationTimeline'
+import { AnimationBudgetExceeded, AnimationTimeline } from '../src/animation/animationTimeline'
 
 const frame = (
     nodes_state: AnimationFrame['nodes_state'],
@@ -60,5 +60,13 @@ describe('AnimationTimeline', () => {
         timeline.push(current)
 
         expect(timeline.get(0)?.nodes_state).toEqual(current.nodes_state)
+    })
+
+    it('stops storing frames once the configured frame budget is reached', () => {
+        const timeline = new AnimationTimeline<AnimationFrame>({ maxFrames: 1, maxRuntimeMs: 1000 })
+        timeline.push(frame([], [], 1))
+
+        expect(() => timeline.push(frame([], [], 2))).toThrow(AnimationBudgetExceeded)
+        expect(timeline.length).toBe(1)
     })
 })
