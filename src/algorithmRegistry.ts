@@ -4,6 +4,7 @@ export type AlgorithmDefinition = {
   id: string
   buildName: string
   entry: `Animate/${string}/index.html`
+  sourceFile: `${string}.ts`
   title: string
   eyebrow: string
   description: string
@@ -57,6 +58,7 @@ export const algorithmRegistry = [
     id: 'topsort',
     buildName: 'topsort',
     entry: 'Animate/topsort/index.html',
+    sourceFile: 'topsort.ts',
     title: '拓扑排序',
     eyebrow: 'TOPOLOGICAL SORT',
     description: '为有向无环图中的节点建立线性顺序。',
@@ -69,6 +71,7 @@ export const algorithmRegistry = [
     id: 'fleury',
     buildName: 'fleury',
     entry: 'Animate/fleury/index.html',
+    sourceFile: 'fleury.ts',
     title: 'Fleury 算法',
     eyebrow: 'EULER TRAIL',
     description: '沿边逐步构造欧拉迹，并判断桥的取舍。',
@@ -81,6 +84,7 @@ export const algorithmRegistry = [
     id: 'dfsscc',
     buildName: 'dfsscc',
     entry: 'Animate/dfsscc/index.html',
+    sourceFile: 'dfsscc.ts',
     title: '强连通分量',
     eyebrow: 'STRONGLY CONNECTED',
     description: '识别有向图中彼此可达的节点集合。',
@@ -93,6 +97,7 @@ export const algorithmRegistry = [
     id: 'bfs',
     buildName: 'bfs',
     entry: 'Animate/bfs/index.html',
+    sourceFile: 'bfs.ts',
     title: 'BFS 遍历',
     eyebrow: 'BREADTH FIRST SEARCH',
     description: '从起点按层访问其所在的可达分量。',
@@ -105,6 +110,7 @@ export const algorithmRegistry = [
     id: 'bfs_shortest_path',
     buildName: 'bfs_sp',
     entry: 'Animate/bfs_shortest_path/index.html',
+    sourceFile: 'bfs_sp.ts',
     title: 'BFS 最短路',
     eyebrow: 'SHORTEST PATH',
     description: '在权值相同的图中寻找最短路径。',
@@ -117,6 +123,7 @@ export const algorithmRegistry = [
     id: 'dfs',
     buildName: 'dfs',
     entry: 'Animate/dfs/index.html',
+    sourceFile: 'dfs.ts',
     title: 'DFS 遍历',
     eyebrow: 'DEPTH FIRST SEARCH',
     description: '从起点沿路径深入探索其所在的可达分量。',
@@ -129,6 +136,7 @@ export const algorithmRegistry = [
     id: 'tarjan_cut',
     buildName: 'tarjan_cut',
     entry: 'Animate/tarjan_cut/index.html',
+    sourceFile: 'tarjan.ts',
     title: 'Tarjan 割点',
     eyebrow: 'CUT VERTEX',
     description: '找出无向图中移除后会增加连通分量数的关键节点。',
