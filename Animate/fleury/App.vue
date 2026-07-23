@@ -6,6 +6,7 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/code-editor.vue'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
+import { serializeGraphInput } from '@/animation/graphInput'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
 import rawCode from './code.cpp?raw'
 import defaultGraphData from './input_data/data.json'
@@ -15,6 +16,7 @@ import { initCytoscape } from './cyto'
 
 const { code, point_jump_info } = read_raw_code(rawCode)
 const defaultGraphSelectorOptions = defaultGraphData.map((item, index) => ({ label: item.name, value: index }))
+const sampleInput = serializeGraphInput(defaultGraphData[0].nodes, defaultGraphData[0].edges, GraphType.undigraph)
 
 const cyContainer = ref<HTMLElement | null>(null)
 const selectedGraph = ref(0)
@@ -68,8 +70,8 @@ onMounted(() => {
     initGraph(data.nodes, data.edges)
 })
 
-const getInputData = (): void => {
-    alert('TODO')
+const applyInputGraph = (inputGraph: Graph): void => {
+    initGraph(inputGraph.all_nodes, inputGraph.all_edges)
 }
 </script>
 
@@ -79,7 +81,9 @@ const getInputData = (): void => {
     title="Fleury 算法"
     :player="player"
     :graph-options="defaultGraphSelectorOptions"
-    @input-data="getInputData"
+    :graph-type="GraphType.undigraph"
+    :sample-input="sampleInput"
+    @input-data="applyInputGraph"
   >
     <template #state>
       <div class="m-1 mt-3">{{ log }}</div>

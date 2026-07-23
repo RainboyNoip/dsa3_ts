@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { NButton, NSelect } from 'naive-ui'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
+import type { Graph } from '@/lib/graph_ts'
+import { GraphType } from '@/lib/graph_ts'
 import AnimationControls from '@/components/animation-controls.vue'
+import AnimationInputDialog from '@/components/animation-input-dialog.vue'
 import SpliteLayout from '@/components/splite_layout_unocss.vue'
 
 type GraphOption = {
@@ -16,17 +19,20 @@ const props = defineProps<{
     player: AnimationPlayer
     graphOptions: GraphOption[]
     selectedGraph: number
+    graphType: GraphType
+    sampleInput: string
 }>()
 
 const emit = defineEmits<{
     'update:selectedGraph': [value: number]
-    'input-data': []
+    'input-data': [graph: Graph]
 }>()
 
 const selectedGraphValue = computed({
     get: () => props.selectedGraph,
     set: (value: number) => emit('update:selectedGraph', value),
 })
+const inputDialogOpen = ref(false)
 
 const goHome = (): void => {
     window.location.assign(import.meta.env.BASE_URL)
@@ -64,7 +70,7 @@ const goHome = (): void => {
                 aria-label="选择图数据"
                 style="width: min(12.5rem, 100%)"
               />
-              <n-button @click="emit('input-data')">输入数据</n-button>
+              <n-button @click="inputDialogOpen = true">输入数据</n-button>
             </div>
             <slot name="state" />
           </div>
@@ -78,5 +84,11 @@ const goHome = (): void => {
         <slot name="code" />
       </template>
     </SpliteLayout>
+    <AnimationInputDialog
+      v-model:show="inputDialogOpen"
+      :sample="sampleInput"
+      :graph-type="graphType"
+      @submit="emit('input-data', $event)"
+    />
   </div>
 </template>
