@@ -1,143 +1,204 @@
-import {Graph,NodeId} from '../../src/lib/graph_ts'
-import {pointJumpType} from '../../src/lib/read_raw_code'
+import { Graph, NodeId } from '../../src/lib/graph_ts'
+import { pointJumpType } from '../../src/lib/read_raw_code'
 
 type EdgeState = {
-    source: NodeId;
-    target: NodeId;
-    class: string[];
+    source: NodeId
+    target: NodeId
+    class: string[]
 }
 
 type NodeState = {
-    id: NodeId;
-    class: string[];
+    id: NodeId
+    class: string[]
 }
 
+export type TopSortStatus = 'idle' | 'running' | 'complete' | 'cycle'
 
-// 一帧动
 type Frame = {
-    // cut_edges: [NodeId,NodeId][]; // cut_edge
-    // visited: NodeId[]; //已经访问过的点
-    // vertex: NodeId; //当前访问的节点
-    // edge: [NodeId,NodeId]; //当前访问的边
-    edges_state : EdgeState[]; //边状态
-    nodes_state : NodeState[]; //点状态
-    jump : [number,number]; //跳跃信息,
-    que: number[], //队列的值
-    top_sort: NodeId[]; //拓扑排序结果
-    log: string;
+    edges_state: EdgeState[]
+    nodes_state: NodeState[]
+    jump: [number, number]
+    que: NodeId[]
+    top_sort: NodeId[]
+    log: string
+    status: TopSortStatus
 }
+
+export type TopSortResult = {
+    status: Exclude<TopSortStatus, 'idle' | 'running'>
+    order: NodeId[]
+    remaining: NodeId[]
+}
+
+const emptyFrame = (): Frame => ({
+    edges_state: [],
+    nodes_state: [],
+    que: [],
+    top_sort: [],
+    jump: [-1, -1],
+    log: '',
+    status: 'idle',
+})
 
 export class topsort {
-    public graph: Graph;
-    private animation: Frame[];
-    private jumpInfo: pointJumpType
-    private in_degree: number[]; //入度
-    private queue: NodeId[];
-    private topsort_list : NodeId[]; //拓扑排序结果
-    private del_edge: [NodeId,NodeId][];
+    public graph: Graph
+    private animation: Frame[] = []
+    private jumpInfo: pointJumpType = {}
+    private in_degree = new Map<NodeId, number>()
+    private queue: NodeId[] = []
+    private topsort_list: NodeId[] = []
+    private del_edge: Array<[NodeId, NodeId]> = []
+    private result: TopSortResult | null = null
+
     constructor() {
-        this.graph= new Graph();
-        this.animation = [];
+        this.graph = new Graph()
+    }
+
+    clear(): void {
+        this.animation = []
         this.jumpInfo = {}
-        this.topsort_list = [];
-        this.del_edge = [];
-        this.in_degree = []
+        this.in_degree.clear()
         this.queue = []
-    }
-    
-    clear(){
-        this.animation = [];
-        this.jumpInfo = {}
-        this.topsort_list = [];
-        this.del_edge = [];
-        this.in_degree = []
-        this.queue = []
+        this.topsort_list = []
+        this.del_edge = []
+        this.result = null
     }
 
-    set_pointJumpInfo( jumpInfo:pointJumpType ) { this.jumpInfo = jumpInfo }
-
-    set_graph(graph: Graph) {
-        this.graph = graph;
+    set_pointJumpInfo(jumpInfo: pointJumpType): void {
+        this.jumpInfo = jumpInfo
     }
 
-    //得到节点的入度
-    private get_in_degree() {
-        this.in_degree = new Array(this.graph.node_cnt+1).fill(0);
+    set_graph(graph: Graph): void {
+        this.graph = graph
+    }
 
-        //遍历所有的边
-        for( let edge of this.graph.all_edges){
-            let target = edge.data.target;
-            this.in_degree[Number(target)] += 1;
+    get_result(): TopSortResult | null {
+        return this.result
+    }
+
+    private jump(name: string): [number, number] {
+        return this.jumpInfo[name] || [-1, -1]
+    }
+
+    private get_in_degree(): void {
+        this.in_degree = new Map(this.graph.node_ids.map((nodeId) => [nodeId, 0]))
+
+        for (const edge of this.graph.all_edges) {
+            const target = Number(edge.data.target)
+            this.in_degree.set(target, (this.in_degree.get(target) || 0) + 1)
         }
-        this.queue = [];
-        for( let i=1; i<=this.graph.node_cnt; i++){
-            if( this.in_degree[i] == 0 ){
-                this.queue.push(i);
-            }
-        }
-        // console.log('jumpinfo',this.jumpInfo)
+
+        this.queue = this.graph.node_ids.filter((nodeId) => this.in_degree.get(nodeId) === 0)
         this.animation.push({
             edges_state: [],
             nodes_state: [],
             que: [...this.queue],
             top_sort: [],
-            jump: this.jumpInfo['push zero in_deg point'],
-            log: '把入度为0的点加入队列'
+            jump: this.jump('push zero in_deg point'),
+            log: '把入度为0的点加入队列',
+            status: 'running',
         })
     }
 
-    //添加队列
-    animate_push(log:string,now_vis_point: NodeId,jump:string) {
+    private animate_push(log: string, nowVisible: NodeId, jumpName: string): void {
         this.animation.push({
-            edges_state: this.del_edge.map((v) => ({ source: v[0], target: v[1], class: ['del'] })),
-            nodes_state: [{ id: now_vis_point, class: ['now_vis'] }].concat(
-                this.topsort_list.map((v) => ({ id: v, class: ['visited'] }))
-            ),
+            edges_state: this.del_edge.map(([source, target]) => ({
+                source,
+                target,
+                class: ['del'],
+            })),
+            nodes_state: [
+                { id: nowVisible, class: ['now_vis'] },
+                ...this.topsort_list.map((id) => ({ id, class: ['visited'] })),
+            ],
             que: [...this.queue],
             top_sort: [...this.topsort_list],
-            jump: this.jumpInfo[jump],
-            log
+            jump: this.jump(jumpName),
+            log,
+            status: 'running',
         })
     }
 
-    //进行拓扑排序
-    run_top_sort() {
-        this.get_in_degree();
-        while( this.queue.length > 0 ) {
-            // console.log(this.queue);
-            let u = this.queue.shift() as NodeId;
-            this.topsort_list.push(u);
-            // console.log(this.topsort_list);
-            this.animate_push('从队列中取出点: ' + u,u,'get u from que')
+    run_top_sort(): TopSortResult {
+        this.animation = []
+        this.in_degree.clear()
+        this.queue = []
+        this.topsort_list = []
+        this.del_edge = []
+        this.result = null
+        this.get_in_degree()
 
-            for( let edge of this.graph.getEdgesStartingFrom(u) ){
-                let v = edge.target;
-                --this.in_degree[v];
-                this.del_edge.push([u,v]);
-                this.animate_push(`从点${u}中取出周围点${v},并减少入度1`,u,'get v from u')
+        while (this.queue.length > 0) {
+            const u = this.queue.shift() as NodeId
+            this.topsort_list.push(u)
+            this.animate_push(`从队列中取出点: ${u}`, u, 'get u from que')
 
-                if( this.in_degree[v] == 0 ) {
-                    this.queue.push(v);
-                    this.animate_push(`点${v}的度为0,加入到队列`,u,'push v to que')
+            for (const edge of this.graph.getEdgesStartingFrom(u)) {
+                const v = edge.target
+                this.in_degree.set(v, (this.in_degree.get(v) || 0) - 1)
+                this.del_edge.push([u, v])
+                this.animate_push(`从点${u}中取出周围点${v},并减少入度1`, u, 'get v from u')
+
+                if (this.in_degree.get(v) === 0) {
+                    this.queue.push(v)
+                    this.animate_push(`点${v}的度为0,加入到队列`, u, 'push v to que')
                 }
             }
-            // this.animation.push({
         }
-    }
 
-    get_frame(idx: number) {
-        if( idx <= 0) return {
-            edges_state: [],
-            nodes_state: [],
+        const remaining = this.graph.node_ids.filter((nodeId) => !this.topsort_list.includes(nodeId))
+        if (remaining.length > 0) {
+            const remainingSet = new Set(remaining)
+            const cycleEdges = this.graph.all_edges
+                .map((edge) => ({
+                    source: Number(edge.data.source),
+                    target: Number(edge.data.target),
+                }))
+                .filter(({ source, target }) => remainingSet.has(source) && remainingSet.has(target))
+                .map(({ source, target }) => ({ source, target, class: ['cycle'] }))
+
+            this.animation.push({
+                edges_state: cycleEdges,
+                nodes_state: remaining.map((id) => ({ id, class: ['cycle'] })),
+                que: [],
+                top_sort: [...this.topsort_list],
+                jump: this.jump('cycle detected'),
+                log: `检测到环，剩余 ${remaining.length} 个节点无法加入拓扑序`,
+                status: 'cycle',
+            })
+            this.result = {
+                status: 'cycle',
+                order: [...this.topsort_list],
+                remaining,
+            }
+            return this.result
+        }
+
+        this.animation.push({
+            edges_state: this.del_edge.map(([source, target]) => ({ source, target, class: ['del'] })),
+            nodes_state: this.topsort_list.map((id) => ({ id, class: ['visited'] })),
             que: [],
-            top_sort: [],
-            jump: [-1,-1],
-            log: ''
+            top_sort: [...this.topsort_list],
+            jump: this.jump('top_sort_done'),
+            log: `拓扑排序完成，共 ${this.topsort_list.length} 个节点`,
+            status: 'complete',
+        })
+        this.result = {
+            status: 'complete',
+            order: [...this.topsort_list],
+            remaining: [],
         }
-        return this.animation[idx-1];
+        return this.result
     }
 
-    public get frame_cnt() {
-        return this.animation.length;
+    get_frame(index: number): Frame {
+        if (index <= 0) {
+            return emptyFrame()
+        }
+        return this.animation[index - 1] || emptyFrame()
+    }
+
+    public get frame_cnt(): number {
+        return this.animation.length
     }
 }

@@ -80,11 +80,12 @@ export function initCytoscape(domId: HTMLElement , nodes: NodeDefinition[], edge
                 }
             },
             {
-
-                selector: 'edge.del',
+                selector: 'node.cycle',
                 style: {
-                    'line-color': '#ccc', // 结点背景色设为白色  
-                    'line-style': 'dashed'  
+                    'color': 'white',
+                    'background-color': '#c2413b',
+                    'border-color': '#8f2824',
+                    'border-width': 3,
                 }
             },
             {
@@ -93,6 +94,14 @@ export function initCytoscape(domId: HTMLElement , nodes: NodeDefinition[], edge
                 style: {
                     'line-color': '#c5ebeb', // 结点背景色设为白色  
                     'line-style': 'dashed'
+                }
+            },
+            {
+                selector: 'edge.cycle',
+                style: {
+                    'line-color': '#c2413b',
+                    'line-style': 'dashed',
+                    'width': 3,
                 }
             }
         ],
