@@ -33,6 +33,7 @@ bun run test            # Vitest 单元测试
 bun run test:watch      # 监听模式运行单元测试
 bun run test:coverage   # 生成单元测试覆盖率
 bun run build           # 类型检查并构建 dist/
+bun run build:analyze   # 分析最大 JavaScript chunk 的依赖构成
 bun run size:check      # 输出并校验 JavaScript 构建体积
 bun run preview         # 预览生产构建
 bun run test:e2e        # Playwright 浏览器测试
@@ -85,6 +86,8 @@ tests/
 5. 运行完整验证命令。
 
 首页卡片和 Vite 多页入口都直接读取注册表，不需要维护第二份入口列表。开发服务器和生产构建启动时会校验 ID、构建名、入口是否唯一，并检查算法目录中的必需文件；缺失或重复会直接使启动或构建失败。
+
+当前构建体积基线与依赖构成见 `docs/bundle-analysis.md`。
 
 ## 部署
 

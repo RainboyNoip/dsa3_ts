@@ -5,6 +5,7 @@ import path from 'path'
 import UnoCSS from 'unocss/vite'
 import { algorithmRegistry } from './src/algorithmRegistry'
 import { validateAlgorithmRegistry } from './build/validateAlgorithmRegistry'
+import { bundleAnalysisPlugin } from './build/bundleAnalysisPlugin'
 
 validateAlgorithmRegistry(__dirname, algorithmRegistry)
 
@@ -15,7 +16,7 @@ const algorithmInputs = Object.fromEntries(algorithmRegistry.map((algorithm) => 
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [UnoCSS(),vue()],
+  plugins: [bundleAnalysisPlugin(process.env.BUNDLE_ANALYZE === '1'), UnoCSS(),vue()],
   resolve: {
     alias: {
       // '@': path.resolve(import.meta.url, "src")
