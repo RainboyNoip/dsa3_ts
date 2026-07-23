@@ -1,4 +1,4 @@
-import {Graph, NodeId} from '../../src/lib/graph_ts'
+import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 
 type EdgeState = { source: NodeId; target: NodeId; class: string[] }
@@ -8,72 +8,119 @@ type Frame = {
     edges_state: EdgeState[]
     nodes_state: NodeState[]
     jump: [number, number]
-    dfn: NodeId[]       // current dfs visited order
+    dfn: NodeId[]
     log: string
 }
 
+export type DFSResult = {
+    status: 'complete' | 'empty' | 'invalid_start'
+    start: NodeId | null
+    order: NodeId[]
+    error?: string
+}
+
+const emptyFrame = (): Frame => ({
+    edges_state: [],
+    nodes_state: [],
+    dfn: [],
+    jump: [-1, -1],
+    log: '',
+})
+
 export class DFS {
-    public graph: Graph
-    private animation: Frame[]
-    private jumpInfo: pointJumpType
-    private dfn: NodeId[]
-    private visited: Set<NodeId>
+    public graph: Graph = new Graph()
+    private animation: Frame[] = []
+    private jumpInfo: pointJumpType = {}
+    private dfn: NodeId[] = []
+    private visited = new Set<NodeId>()
+    private result: DFSResult | null = null
 
-    constructor() { this.graph = new Graph(); this.animation = []; this.jumpInfo = {}; this.dfn = []; this.visited = new Set(); }
-    
-    clear() { this.animation = []; this.jumpInfo = {}; this.dfn = []; this.visited = new Set(); }
-    
-    set_pointJumpInfo(jumpInfo: pointJumpType) { this.jumpInfo = jumpInfo }
-    set_graph(graph: Graph) { this.graph = graph }
-
-    run_dfs(start: NodeId = 1) {
-        this._dfs(start, 0)
+    clear(): void {
+        this.animation = []
+        this.jumpInfo = {}
+        this.dfn = []
+        this.visited.clear()
+        this.result = null
     }
 
-    private _dfs(u: NodeId, father: NodeId) {
+    set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
+    set_graph(graph: Graph): void { this.graph = graph }
+    get_result(): DFSResult | null { return this.result }
+
+    private jump(name: string): [number, number] {
+        return this.jumpInfo[name] || [-1, -1]
+    }
+
+    run_dfs(start?: NodeId): DFSResult {
+        this.animation = []
+        this.dfn = []
+        this.visited.clear()
+        const startId = start ?? this.graph.getFirstVertex() ?? null
+        if (startId === null) {
+            this.result = { status: 'empty', start: null, order: [] }
+            this.animation.push({ ...emptyFrame(), log: '图为空，没有可遍历的节点' })
+            return this.result
+        }
+        if (!this.graph.hasVertex(startId)) {
+            const error = `起点 ${startId} 不存在`
+            this.result = {
+                status: 'invalid_start',
+                start: startId,
+                order: [],
+                error,
+            }
+            this.animation.push({ ...emptyFrame(), log: error })
+            return this.result
+        }
+
+        this.dfs(startId, null)
+        this.result = { status: 'complete', start: startId, order: [...this.dfn] }
+        return this.result
+    }
+
+    private dfs(u: NodeId, father: NodeId | null): void {
         this.visited.add(u)
         this.dfn.push(u)
-        
+
         this.animation.push({
             edges_state: [],
             nodes_state: [
                 { id: u, class: ['now_vis'] },
-                ...this.dfn.filter(v => v !== u).map(v => ({ id: v, class: ['visited'] }))
+                ...this.dfn.filter((id) => id !== u).map((id) => ({ id, class: ['visited'] })),
             ],
             dfn: [...this.dfn],
-            jump: this.jumpInfo['dfs_set_visited'] || [-1, -1],
-            log: `dfs访问到点 ${u},设置为已访问`
+            jump: this.jump('dfs_set_visited'),
+            log: `dfs访问到点 ${u},设置为已访问`,
         })
 
-        let adjEdges = this.graph.getEdgesStartingFrom(u)
-        for (let edge of adjEdges) {
-            let next = edge.target
-            if (next === father) continue  // skip parent edge
-            
-            let isBackEdge = this.visited.has(next)
+        for (const edge of this.graph.getEdgesStartingFrom(u)) {
+            const next = edge.target
+            if (!this.graph.is_directed && next === father) continue
+
+            const isBackEdge = this.visited.has(next)
             this.animation.push({
                 edges_state: [{ source: u, target: next, class: isBackEdge ? ['back_ancestor'] : ['highlight'] }],
                 nodes_state: [
                     { id: u, class: ['now_vis'] },
-                    ...this.dfn.map(v => ({ id: v, class: ['visited'] }))
+                    ...this.dfn.map((id) => ({ id, class: ['visited'] })),
                 ],
                 dfn: [...this.dfn],
-                jump: this.jumpInfo['dfs_check_edge'] || [-1, -1],
-                log: isBackEdge 
-                    ? `通过边 <${u},${next}>, 点${next}已访问,是返祖边` 
-                    : `通过边 <${u},${next}>, 尝试走向点 ${next}`
+                jump: this.jump('dfs_check_edge'),
+                log: isBackEdge
+                    ? `通过边 <${u},${next}>, 点${next}已访问,是返祖边`
+                    : `通过边 <${u},${next}>, 尝试走向点 ${next}`,
             })
 
             if (!isBackEdge) {
-                this._dfs(next, u)
+                this.dfs(next, u)
             }
         }
     }
 
-    get_frame(idx: number): Frame {
-        if (idx <= 0) return { edges_state: [], nodes_state: [], dfn: [], jump: [-1,-1], log: '' }
-        return this.animation[idx - 1]
+    get_frame(index: number): Frame {
+        if (index <= 0) return emptyFrame()
+        return this.animation[index - 1] || emptyFrame()
     }
 
-    public get frame_cnt() { return this.animation.length }
+    public get frame_cnt(): number { return this.animation.length }
 }

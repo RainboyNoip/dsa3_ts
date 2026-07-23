@@ -1,4 +1,4 @@
-import {Graph, NodeId} from '../../src/lib/graph_ts'
+import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 
 type EdgeState = { source: NodeId; target: NodeId; class: string[] }
@@ -15,124 +15,158 @@ type Frame = {
     log: string
 }
 
+export type BFSResult = {
+    status: 'complete' | 'empty' | 'invalid_start'
+    start: NodeId | null
+    order: NodeId[]
+    error?: string
+}
+
+const emptyFrame = (): Frame => ({
+    edges_state: [],
+    nodes_state: [],
+    que: [],
+    visited: [],
+    head: null,
+    poped: [],
+    jump: [-1, -1],
+    log: '',
+})
+
 export class BFS {
-    public graph: Graph
-    private animation: Frame[]
-    private jumpInfo: pointJumpType
-    private queue: NodeId[]
-    private visited: NodeId[]
-    private poped: NodeId[]
+    public graph: Graph = new Graph()
+    private animation: Frame[] = []
+    private jumpInfo: pointJumpType = {}
+    private result: BFSResult | null = null
 
-    constructor() {
-        this.graph = new Graph();
-        this.animation = [];
-        this.jumpInfo = {};
-        this.queue = [];
-        this.visited = [];
-        this.poped = [];
+    clear(): void {
+        this.animation = []
+        this.jumpInfo = {}
+        this.result = null
     }
 
-    clear() {
-        this.animation = [];
-        this.jumpInfo = {};
-        this.queue = [];
-        this.visited = [];
-        this.poped = [];
+    set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
+
+    set_graph(graph: Graph): void { this.graph = graph }
+
+    get_result(): BFSResult | null { return this.result }
+
+    private jump(name: string): [number, number] {
+        return this.jumpInfo[name] || [-1, -1]
     }
 
-    set_pointJumpInfo(jumpInfo: pointJumpType) { this.jumpInfo = jumpInfo }
+    run_bfs(start?: NodeId): BFSResult {
+        this.animation = []
+        const startId = start ?? this.graph.getFirstVertex() ?? null
+        if (startId === null) {
+            this.result = { status: 'empty', start: null, order: [] }
+            this.animation.push({ ...emptyFrame(), log: '图为空，没有可遍历的节点' })
+            return this.result
+        }
+        if (!this.graph.hasVertex(startId)) {
+            const error = `起点 ${startId} 不存在`
+            this.result = {
+                status: 'invalid_start',
+                start: startId,
+                order: [],
+                error,
+            }
+            this.animation.push({ ...emptyFrame(), log: error })
+            return this.result
+        }
 
-    set_graph(graph: Graph) { this.graph = graph }
+        const queue: NodeId[] = [startId]
+        const visited = new Set<NodeId>([startId])
+        const popped: NodeId[] = []
+        const snapshot = () => [...visited]
 
-    run_bfs(start: NodeId = 1) {
-        this.queue.push(start)
-        this.visited.push(start)
         this.animation.push({
             edges_state: [],
-            nodes_state: [{ id: start, class: ['now_vis'] }],
-            que: [...this.queue],
-            visited: [...this.visited],
+            nodes_state: [{ id: startId, class: ['now_vis'] }],
+            que: [...queue],
+            visited: snapshot(),
             head: null,
-            poped: [...this.poped],
-            jump: this.jumpInfo['bfs_init'] || [-1, -1],
-            log: `将结点 ${start} 加入队列,并设置为已访问`
+            poped: [...popped],
+            jump: this.jump('bfs_init'),
+            log: `将结点 ${startId} 加入队列,并设置为已访问`,
         })
 
-        while (this.queue.length > 0) {
-            let u = this.queue.shift() as NodeId
-            this.poped.push(u)
+        while (queue.length > 0) {
+            const u = queue.shift() as NodeId
+            popped.push(u)
             this.animation.push({
                 edges_state: [],
-                nodes_state: [{ id: u, class: ['now_vis'] },
-                    ...this.visited.map(v => ({ id: v, class: ['highlight'] }))],
-                que: [...this.queue],
-                visited: [...this.visited],
+                nodes_state: [
+                    { id: u, class: ['now_vis'] },
+                    ...snapshot().map((id) => ({ id, class: ['highlight'] })),
+                ],
+                que: [...queue],
+                visited: snapshot(),
                 head: u,
-                poped: [...this.poped],
-                jump: this.jumpInfo['que_pop'] || [-1, -1],
-                log: `取出的队列头部元素为 ${u}`
+                poped: [...popped],
+                jump: this.jump('que_pop'),
+                log: `取出的队列头部元素为 ${u}`,
             })
 
-            let adjEdges = this.graph.getEdgesStartingFrom(u)
-            for (let edge of adjEdges) {
-                let next = edge.target
-                if (this.visited.includes(next)) continue
+            for (const edge of this.graph.getEdgesStartingFrom(u)) {
+                const next = edge.target
+                if (visited.has(next)) continue
 
                 this.animation.push({
                     edges_state: [{ source: u, target: next, class: ['highlight'] }],
-                    nodes_state: [{ id: u, class: ['now_vis'] },
-                        ...this.visited.map(v => ({ id: v, class: ['highlight'] }))],
-                    que: [...this.queue],
-                    visited: [...this.visited],
+                    nodes_state: [
+                        { id: u, class: ['now_vis'] },
+                        ...snapshot().map((id) => ({ id, class: ['highlight'] })),
+                    ],
+                    que: [...queue],
+                    visited: snapshot(),
                     head: u,
-                    poped: [...this.poped],
-                    jump: this.jumpInfo['check_adj_edge'] || [-1, -1],
-                    log: `通过边 <${u},${next}>, 访问点 ${next}`
+                    poped: [...popped],
+                    jump: this.jump('check_adj_edge'),
+                    log: `通过边 <${u},${next}>, 访问点 ${next}`,
                 })
 
-                this.queue.push(next)
-                this.visited.push(next)
+                queue.push(next)
+                visited.add(next)
                 this.animation.push({
                     edges_state: [],
-                    nodes_state: [{ id: u, class: ['now_vis'] },
+                    nodes_state: [
+                        { id: u, class: ['now_vis'] },
                         { id: next, class: ['visited'] },
-                        ...this.visited.filter(v => v !== next).map(v => ({ id: v, class: ['highlight'] }))],
-                    que: [...this.queue],
-                    visited: [...this.visited],
+                        ...snapshot().filter((id) => id !== next).map((id) => ({ id, class: ['highlight'] })),
+                    ],
+                    que: [...queue],
+                    visited: snapshot(),
                     head: u,
-                    poped: [...this.poped],
-                    jump: this.jumpInfo['que_push'] || [-1, -1],
-                    log: `将结点 ${next} 加入队列,并设置为已访问`
+                    poped: [...popped],
+                    jump: this.jump('que_push'),
+                    log: `将结点 ${next} 加入队列,并设置为已访问`,
                 })
             }
 
             this.animation.push({
                 edges_state: [],
-                nodes_state: [{ id: u, class: ['visited'] },
-                    ...this.visited.filter(v => v !== u).map(v => ({ id: v, class: ['highlight'] }))],
-                que: [...this.queue],
-                visited: [...this.visited],
+                nodes_state: [
+                    { id: u, class: ['visited'] },
+                    ...snapshot().filter((id) => id !== u).map((id) => ({ id, class: ['highlight'] })),
+                ],
+                que: [...queue],
+                visited: snapshot(),
                 head: null,
-                poped: [...this.poped],
+                poped: [...popped],
                 jump: [-1, -1],
-                log: `结点 ${u} 周围点的已经全部访问完`
+                log: `结点 ${u} 周围点已经全部访问完`,
             })
         }
+
+        this.result = { status: 'complete', start: startId, order: snapshot() }
+        return this.result
     }
 
-    get_frame(idx: number) {
-        if (idx <= 0) return {
-            edges_state: [],
-            nodes_state: [],
-            que: [],
-            visited: [],
-            head: null,
-            poped: [],
-            jump: [-1, -1],
-            log: ''
-        }
-        return this.animation[idx - 1]
+    get_frame(index: number): Frame {
+        if (index <= 0) return emptyFrame()
+        return this.animation[index - 1] || emptyFrame()
     }
 
-    public get frame_cnt() { return this.animation.length }
+    public get frame_cnt(): number { return this.animation.length }
 }
