@@ -64,7 +64,7 @@ status: in-progress
 ### DFS、BFS、Tarjan 与 SCC
 
 - [ ] 明确“遍历可达分量”和“遍历整张图”的产品语义。
-- [ ] Tarjan 割点算法遍历所有连通分量，不能只从默认节点 `1` 开始。
+- [x] Tarjan 割点算法遍历所有连通分量，不能只从默认节点 `1` 开始。
 - [x] BFS、DFS 和最短路允许选择合法起点，并处理起点不存在的情况。
 - [x] BFS 最短路记录 `predecessor`，能够还原并高亮具体最短路径，而不只展示距离。
 - [x] 用 `Set<NodeId>` 替代热点路径中的 `visited.includes()`。

@@ -1,188 +1,273 @@
-import {Graph, NodeId} from '../../src/lib/graph_ts'
+import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 
 type EdgeState = { source: NodeId; target: NodeId; class: string[] }
 type NodeState = { id: NodeId; class: string[] }
 
-type Frame = {
+export type TarjanFrameStatus = 'running' | 'complete' | 'empty' | 'invalid'
+
+export type TarjanFrame = {
     edges_state: EdgeState[]
     nodes_state: NodeState[]
     jump: [number, number]
+    node_ids: NodeId[]
     dfn: number[]
     low: number[]
     dfs_time: number
     cut_nodes: NodeId[]
+    status: TarjanFrameStatus
     log: string
 }
 
+export type TarjanCutResult = {
+    status: 'complete' | 'empty' | 'invalid_start' | 'invalid_graph'
+    cut_nodes: NodeId[]
+    visited: NodeId[]
+    start: NodeId | null
+    error?: string
+}
+
+const emptyFrame = (nodeIds: NodeId[] = []): TarjanFrame => ({
+    edges_state: [],
+    nodes_state: [],
+    jump: [-1, -1],
+    node_ids: [...nodeIds],
+    dfn: nodeIds.map(() => 0),
+    low: nodeIds.map(() => 0),
+    dfs_time: 0,
+    cut_nodes: [],
+    status: 'empty',
+    log: '',
+})
+
 export class TarjanCut {
     public graph: Graph
-    private animation: Frame[]
-    private jumpInfo: pointJumpType
-    private dfn: number[]
-    private low: number[]
-    private dfs_time: number
-    private visited: Set<NodeId>
-    private cut_nodes: Set<NodeId>
+    private animation: TarjanFrame[] = []
+    private jumpInfo: pointJumpType = {}
+    private dfn = new Map<NodeId, number>()
+    private low = new Map<NodeId, number>()
+    private dfsTime = 0
+    private visited = new Set<NodeId>()
+    private cutNodesSet = new Set<NodeId>()
+    private result: TarjanCutResult | null = null
 
-    constructor() { 
+    constructor() {
         this.graph = new Graph()
+    }
+
+    clear(): void {
         this.animation = []
         this.jumpInfo = {}
-        this.dfn = []
-        this.low = []
-        this.dfs_time = 0
-        this.visited = new Set()
-        this.cut_nodes = new Set()
+        this.dfn.clear()
+        this.low.clear()
+        this.dfsTime = 0
+        this.visited.clear()
+        this.cutNodesSet.clear()
+        this.result = null
     }
-    
-    clear() { this.animation = []; this.jumpInfo = {}; this.dfn = []; this.low = []; this.dfs_time = 0; this.visited = new Set(); this.cut_nodes = new Set(); }
-    
-    set_pointJumpInfo(jumpInfo: pointJumpType) { this.jumpInfo = jumpInfo }
-    set_graph(graph: Graph) { 
+
+    set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
+
+    set_graph(graph: Graph): void {
         this.graph = graph
-        this.dfn = new Array(graph.node_cnt + 1).fill(0)
-        this.low = new Array(graph.node_cnt + 1).fill(0)
+        this.resetRunState()
     }
 
-    run(start: NodeId = 1) {
-        this._tarjan(start, 0)
+    get_result(): TarjanCutResult | null { return this.result }
+
+    run(start?: NodeId): TarjanCutResult {
+        this.resetRunState()
+        const nodeIds = this.graph.node_ids
+        const startId = start ?? this.graph.getFirstVertex() ?? null
+
+        if (this.graph.is_directed) {
+            const error = 'Tarjan 割点算法只支持无向图'
+            this.result = {
+                status: 'invalid_graph',
+                cut_nodes: [],
+                visited: [],
+                start: startId,
+                error,
+            }
+            this.animation.push({ ...emptyFrame(nodeIds), status: 'invalid', log: error })
+            return this.result
+        }
+
+        if (startId === null) {
+            this.result = { status: 'empty', cut_nodes: [], visited: [], start: null }
+            this.animation.push(emptyFrame())
+            return this.result
+        }
+
+        if (!this.graph.hasVertex(startId)) {
+            const error = `起点 ${startId} 不存在`
+            this.result = {
+                status: 'invalid_start',
+                cut_nodes: [],
+                visited: [],
+                start: startId,
+                error,
+            }
+            this.animation.push({ ...emptyFrame(nodeIds), status: 'invalid', log: error })
+            return this.result
+        }
+
+        const roots = [startId, ...nodeIds.filter((nodeId) => nodeId !== startId)]
+        for (const root of roots) {
+            if (!this.dfn.has(root)) {
+                this.tarjan(root, null)
+            }
+        }
+
+        const cutNodes = this.getCutNodes()
+        const visited = [...this.visited]
+        const result: TarjanCutResult = {
+            status: 'complete',
+            cut_nodes: cutNodes,
+            visited,
+            start: startId,
+        }
+        this.result = result
+        this.pushFrame({
+            status: 'complete',
+            jump: [-1, -1],
+            log: `Tarjan 遍历完成，共访问 ${visited.length} 个节点，发现割点：${cutNodes.length > 0 ? cutNodes.join('、') : '无'}`,
+        })
+        return result
     }
 
-    private _tarjan(u: NodeId, fa: NodeId) {
-        let child = 0
-        this.dfs_time++
-        this.dfn[u] = this.low[u] = this.dfs_time
+    private resetRunState(): void {
+        this.animation = []
+        this.dfn.clear()
+        this.low.clear()
+        this.dfsTime = 0
+        this.visited.clear()
+        this.cutNodesSet.clear()
+        this.result = null
+    }
+
+    private jump(name: string): [number, number] {
+        return this.jumpInfo[name] || [-1, -1]
+    }
+
+    private snapshot(values: Map<NodeId, number>): number[] {
+        return this.graph.node_ids.map((nodeId) => values.get(nodeId) ?? 0)
+    }
+
+    private getCutNodes(): NodeId[] {
+        return this.graph.node_ids.filter((nodeId) => this.cutNodesSet.has(nodeId))
+    }
+
+    private nodeStates(now: NodeId | null): NodeState[] {
+        return [...this.visited].map((nodeId) => {
+            const classes: string[] = this.cutNodesSet.has(nodeId) ? ['cut'] : ['visited']
+            if (nodeId === now) classes.unshift('now_vis')
+            return { id: nodeId, class: classes }
+        })
+    }
+
+    private pushFrame(options: {
+        edges_state?: EdgeState[]
+        now?: NodeId | null
+        jump?: [number, number]
+        status?: TarjanFrameStatus
+        log: string
+    }): void {
+        this.animation.push({
+            edges_state: options.edges_state || [],
+            nodes_state: this.nodeStates(options.now ?? null),
+            jump: options.jump || [-1, -1],
+            node_ids: this.graph.node_ids,
+            dfn: this.snapshot(this.dfn),
+            low: this.snapshot(this.low),
+            dfs_time: this.dfsTime,
+            cut_nodes: this.getCutNodes(),
+            status: options.status || 'running',
+            log: options.log,
+        })
+    }
+
+    private tarjan(u: NodeId, parent: NodeId | null): void {
+        let childCount = 0
+        this.dfsTime += 1
+        this.dfn.set(u, this.dfsTime)
+        this.low.set(u, this.dfsTime)
         this.visited.add(u)
 
-        this.animation.push({
-            edges_state: [],
-            nodes_state: [
-                { id: u, class: ['now_vis'] },
-                ...Array.from(this.visited).filter(v => v !== u).map(v => ({ id: v, class: ['visited'] }))
-            ],
-            dfn: [...this.dfn],
-            low: [...this.low],
-            dfs_time: this.dfs_time,
-            cut_nodes: [...this.cut_nodes],
-            jump: this.jumpInfo['tarjan_enter'] || [-1, -1],
-            log: `tarjan访问到点 ${u}, 设置dfn[${u}]=low[${u}]=${this.dfs_time}`
+        this.pushFrame({
+            now: u,
+            jump: this.jump('tarjan_enter'),
+            log: `tarjan 访问到点 ${u}，设置 dfn[${u}]=low[${u}]=${this.dfsTime}`,
         })
 
-        let adjEdges = this.graph.getEdgesStartingFrom(u)
-        for (let edge of adjEdges) {
-            let v = edge.target
-            if (v === fa) {
-                this.animation.push({
+        for (const edge of this.graph.getEdgesStartingFrom(u)) {
+            const v = edge.target
+            if (v === parent) {
+                this.pushFrame({
                     edges_state: [{ source: u, target: v, class: ['back_ancestor'] }],
-                    nodes_state: [
-                        { id: u, class: ['now_vis'] },
-                        ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['now_vis'] : ['visited'] }))
-                    ],
-                    dfn: [...this.dfn],
-                    low: [...this.low],
-                    dfs_time: this.dfs_time,
-                    cut_nodes: [...this.cut_nodes],
-                    jump: this.jumpInfo['tarjan_skip_parent'] || [-1, -1],
-                    log: `${v} 是父亲,是树边,不走!`
+                    now: u,
+                    jump: this.jump('tarjan_skip_parent'),
+                    log: `${v} 是父亲，是树边，不走`,
                 })
                 continue
             }
 
-            let isBackEdge = this.visited.has(v)
-            this.animation.push({
+            const isBackEdge = this.dfn.has(v)
+            this.pushFrame({
                 edges_state: [{ source: u, target: v, class: isBackEdge ? ['back_ancestor'] : ['highlight'] }],
-                nodes_state: [
-                    { id: u, class: ['now_vis'] },
-                    ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['now_vis'] : ['visited'] }))
-                ],
-                dfn: [...this.dfn],
-                low: [...this.low],
-                dfs_time: this.dfs_time,
-                cut_nodes: [...this.cut_nodes],
-                jump: this.jumpInfo['tarjan_check_edge'] || [-1, -1],
+                now: u,
+                jump: this.jump('tarjan_check_edge'),
                 log: isBackEdge
-                    ? `通过边 <${u},${v}>, 点${v}已访问,是返祖边`
-                    : `通过边 <${u},${v}>, 走向点${v}`
+                    ? `通过边 <${u},${v}>，点 ${v} 已访问，是返祖边`
+                    : `通过边 <${u},${v}>，走向点 ${v}`,
             })
 
             if (isBackEdge) {
-                let oldLow = this.low[u]
-                this.low[u] = Math.min(this.low[u], this.dfn[v])
-                this.animation.push({
-                    edges_state: [],
-                    nodes_state: [
-                        { id: u, class: ['now_vis'] },
-                        ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['now_vis'] : ['visited'] }))
-                    ],
-                    dfn: [...this.dfn],
-                    low: [...this.low],
-                    dfs_time: this.dfs_time,
-                    cut_nodes: [...this.cut_nodes],
-                    jump: this.jumpInfo['tarjan_update_low_back'] || [-1, -1],
-                    log: `用dfn[${v}]=${this.dfn[v]}更新点${u}的low值: ${oldLow} -> ${this.low[u]}`
+                const oldLow = this.low.get(u) as number
+                this.low.set(u, Math.min(oldLow, this.dfn.get(v) as number))
+                this.pushFrame({
+                    now: u,
+                    jump: this.jump('tarjan_update_low_back'),
+                    log: `用 dfn[${v}]=${this.dfn.get(v)} 更新点 ${u} 的 low 值：${oldLow} -> ${this.low.get(u)}`,
                 })
-            } else {
-                this._tarjan(v, u)
-                child++
+                continue
+            }
 
-                let oldLow = this.low[u]
-                this.low[u] = Math.min(this.low[u], this.low[v])
-                this.animation.push({
-                    edges_state: [],
-                    nodes_state: [
-                        { id: u, class: ['now_vis'] },
-                        ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['now_vis'] : ['visited'] }))
-                    ],
-                    dfn: [...this.dfn],
-                    low: [...this.low],
-                    dfs_time: this.dfs_time,
-                    cut_nodes: [...this.cut_nodes],
-                    jump: this.jumpInfo['tarjan_update_low_child'] || [-1, -1],
-                    log: `利用孩子${v},更新点${u}的low值: ${oldLow} -> ${this.low[u]}`
+            this.tarjan(v, u)
+            childCount += 1
+
+            const oldLow = this.low.get(u) as number
+            this.low.set(u, Math.min(oldLow, this.low.get(v) as number))
+            this.pushFrame({
+                now: u,
+                jump: this.jump('tarjan_update_low_child'),
+                log: `利用孩子 ${v} 更新点 ${u} 的 low 值：${oldLow} -> ${this.low.get(u)}`,
+            })
+
+            if (parent !== null && (this.low.get(v) as number) >= (this.dfn.get(u) as number)) {
+                this.cutNodesSet.add(u)
+                this.pushFrame({
+                    now: u,
+                    jump: this.jump('tarjan_cut_found'),
+                    log: `${u} 不是根，且子树 ${v} 上的所有点都回不到 ${u} 的祖先点，${u} 是割点`,
                 })
-
-                if (fa !== 0 && this.low[v] >= this.dfn[u]) {
-                    this.cut_nodes.add(u)
-                    this.animation.push({
-                        edges_state: [],
-                        nodes_state: [
-                            { id: u, class: ['cut'] },
-                            ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['cut'] : ['visited'] }))
-                        ],
-                        dfn: [...this.dfn],
-                        low: [...this.low],
-                        dfs_time: this.dfs_time,
-                        cut_nodes: [...this.cut_nodes],
-                        jump: this.jumpInfo['tarjan_cut_found'] || [-1, -1],
-                        log: `${u}不是根,且子树${v}上的所有点都回不到点${u}的祖先点,${u}是割点`
-                    })
-                }
             }
         }
 
-        if (fa === 0 && child > 1) {
-            this.cut_nodes.add(u)
-            this.animation.push({
-                edges_state: [],
-                nodes_state: [
-                    { id: u, class: ['cut'] },
-                    ...Array.from(this.visited).map(n => ({ id: n, class: n === u ? ['cut'] : ['visited'] }))
-                ],
-                dfn: [...this.dfn],
-                low: [...this.low],
-                dfs_time: this.dfs_time,
-                cut_nodes: [...this.cut_nodes],
-                jump: this.jumpInfo['tarjan_root_cut'] || [-1, -1],
-                log: `${u}是根,且孩子的数量(${child})超过了1,${u}是割点`
+        if (parent === null && childCount > 1) {
+            this.cutNodesSet.add(u)
+            this.pushFrame({
+                now: u,
+                jump: this.jump('tarjan_root_cut'),
+                log: `${u} 是根，且孩子数量（${childCount}）超过 1，${u} 是割点`,
             })
         }
     }
 
-    get_frame(idx: number): Frame {
-        if (idx <= 0) return { edges_state: [], nodes_state: [], dfn: [], low: [], dfs_time: 0, cut_nodes: [], jump: [-1,-1], log: '' }
-        return this.animation[idx - 1]
+    get_frame(index: number): TarjanFrame {
+        if (index <= 0) return emptyFrame(this.graph.node_ids)
+        return this.animation[index - 1] || emptyFrame(this.graph.node_ids)
     }
 
-    public get frame_cnt() { return this.animation.length }
+    public get frame_cnt(): number { return this.animation.length }
 }

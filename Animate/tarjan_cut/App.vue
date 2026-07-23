@@ -98,7 +98,7 @@ export default defineComponent({
             this.tarjanCut.clear();
             this.tarjanCut.set_graph(this.graph as Graph)
             this.tarjanCut.set_pointJumpInfo(point_jump_info)
-            this.tarjanCut.run(1)
+            this.tarjanCut.run()
         },
         get_input_data() {
           alert('TODO')
@@ -111,10 +111,10 @@ export default defineComponent({
         dfn_table_data() {
             if( this.now_frame <=0 ) return []
             let frame = this.tarjanCut.get_frame(this.now_frame)
-            return frame.dfn.slice(1).map((val,idx) => ({
-                node: idx + 1,
-                dfn: val,
-                low: frame.low[idx + 1] || 0
+            return frame.node_ids.map((node, idx) => ({
+                node,
+                dfn: frame.dfn[idx] || 0,
+                low: frame.low[idx] || 0
             }))
         },
         cut_nodes() {
