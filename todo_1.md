@@ -115,10 +115,10 @@ status: in-progress
 
 ### 单一算法注册表
 
-- [ ] 将名称、路径、标题、描述、标签、颜色、图标和 Vite 入口收敛到一份强类型配置。
-- [ ] 从注册表生成首页卡片，避免同时维护 `animate_list.json` 和 `App.vue` 的 `algorithmMeta`。
+- [x] 将名称、路径、标题、描述、标签、颜色、图标和 Vite 入口收敛到一份强类型配置。
+- [x] 从注册表生成首页卡片，避免同时维护 `animate_list.json` 和 `App.vue` 的 `algorithmMeta`。
 - [ ] 在构建阶段校验每个算法目录是否存在 `index.html`、`main.ts`、`App.vue`、算法文件、`code.cpp` 和数据文件。
-- [ ] 自动生成或校验 Vite 多页入口，降低新增算法时漏注册的概率。
+- [x] 自动生成或校验 Vite 多页入口，降低新增算法时漏注册的概率。
 
 ## P1：动画页 UI/UX
 

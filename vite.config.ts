@@ -3,6 +3,12 @@ import vue from '@vitejs/plugin-vue'
 // import { resolve } from "path"
 import path from 'path'
 import UnoCSS from 'unocss/vite'
+import { algorithmRegistry } from './src/algorithmRegistry'
+
+const algorithmInputs = Object.fromEntries(algorithmRegistry.map((algorithm) => [
+  algorithm.buildName,
+  path.resolve(__dirname, algorithm.entry),
+]))
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,13 +27,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        fleury: path.resolve(__dirname, 'Animate/fleury/index.html'),
-        topsort: path.resolve(__dirname, 'Animate/topsort/index.html'),
-        dfsscc: path.resolve(__dirname, 'Animate/dfsscc/index.html'),
-        bfs: path.resolve(__dirname, 'Animate/bfs/index.html'),
-        bfs_sp: path.resolve(__dirname, 'Animate/bfs_shortest_path/index.html'),
-        dfs: path.resolve(__dirname, 'Animate/dfs/index.html'),
-        tarjan_cut: path.resolve(__dirname, 'Animate/tarjan_cut/index.html'),
+        ...algorithmInputs,
       },
     },
   },
