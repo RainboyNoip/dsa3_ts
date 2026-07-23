@@ -6,16 +6,16 @@
 
 ```bash
 # 安装依赖
-yarn
+bun install
 
 # 启动开发服务器（默认带 --host）
-yarn dev
+bun run dev
 
 # 构建生产版本
-yarn build
+bun run build
 
 # 预览构建结果
-yarn preview
+bun run preview
 ```
 
 ## 项目结构
@@ -40,4 +40,4 @@ Animate/
 ./push.sh
 ```
 
-该脚本会执行 `yarn build` 然后 rsync 到远程服务器。
+该脚本会执行 `bun run build` 然后 rsync 到远程服务器。
