@@ -4,7 +4,7 @@ import type { NodeId } from '../lib/graph_ts'
 
 export type CytoscapeFrame = {
     edges_state: Array<{ source: NodeId; target: NodeId; class: string[] }>
-    nodes_state: Array<{ id: NodeId; class: string[] }>
+    nodes_state: Array<{ id: NodeId; class: string[]; color?: string }>
 }
 
 type CreateCytoscape = (
@@ -57,7 +57,9 @@ export function useCytoscapeRenderer(
                     .addClass(edge.class.join(' '))
             }
             for (const node of frame.nodes_state) {
-                cy.nodes(`[id = "${node.id}"]`).addClass(node.class.join(' '))
+                const elements = cy.nodes(`[id = "${node.id}"]`)
+                elements.addClass(node.class.join(' '))
+                if (node.color !== undefined) elements.data('color', node.color)
             }
         })
     }
