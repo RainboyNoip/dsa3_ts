@@ -10,6 +10,20 @@ type CreateCytoscape = (
     edges: EdgeDefinition[],
 ) => Core
 
+export const animationClasses = [
+    'highlight',
+    'visited',
+    'now_vis',
+    'queued',
+    'back_ancestor',
+    'colored',
+    'tree',
+    'other',
+    'cut_edge',
+    'del',
+    'cycle',
+] as const
+
 export function useCytoscapeRenderer(
     container: Ref<HTMLElement | null>,
     createCytoscape: CreateCytoscape,
@@ -47,13 +61,7 @@ export function useCytoscapeRenderer(
         const cy = instance.value
         if (!cy) return
 
-        const classes = new Set<string>()
-        cy.elements().forEach((element) => {
-            element.classes().forEach((className) => classes.add(className))
-        })
-        if (classes.size > 0) {
-            cy.elements().removeClass([...classes].join(' '))
-        }
+        cy.elements().removeClass(animationClasses.join(' '))
         cy.edges().removeData('dfn')
     }
 
