@@ -18,6 +18,17 @@ export type EdgeState = {
     dfn?: number
 }
 
+/** Result statuses shared by all algorithm runners. */
+export type AnimationSuccessStatus = 'complete'
+export type AnimationEmptyStatus = 'empty'
+export type AnimationNoSolutionStatus = 'cycle' | 'no_euler_trail'
+export type AnimationInputErrorStatus = 'invalid_start' | 'invalid_graph'
+export type AnimationResultStatus =
+    | AnimationSuccessStatus
+    | AnimationEmptyStatus
+    | AnimationNoSolutionStatus
+    | AnimationInputErrorStatus
+
 /** Shared visual portion of every algorithm animation frame. */
 export type AnimationFrame<Status extends string = string> = {
     edges_state: EdgeState[]
@@ -27,7 +38,7 @@ export type AnimationFrame<Status extends string = string> = {
 }
 
 /** Common shape for algorithm execution results. */
-export type AnimationResult<Status extends string, Data extends object = Record<never, never>> = Data & {
+export type AnimationResult<Status extends AnimationResultStatus, Data extends object = Record<never, never>> = Data & {
     status: Status
     error?: string
 }

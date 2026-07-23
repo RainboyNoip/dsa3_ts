@@ -101,7 +101,7 @@ status: in-progress
 
 - [x] 在 `src/animation/` 定义统一的 `AnimationFrame`、`NodeState`、`EdgeState`、`JumpRange` 和算法执行结果类型。
 - [x] 统一 `get_frame()` 的索引语义，全部使用同一种 0/1 基准。
-- [ ] 为成功、完成、无解和输入错误定义结构化状态。
+- [x] 为成功、完成、无解和输入错误定义结构化状态。
 
 ### 公共组件与组合函数
 
