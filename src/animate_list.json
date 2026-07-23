@@ -10,5 +10,11 @@
         "url":"/Animate/fleury/index.html",
         "desc":"Fleury算法求欧拉迹",
         "logo":"TODO"
+    },
+    {
+        "name":"dfsscc",
+        "url":"/Animate/dfsscc/index.html",
+        "desc":"dfsscc算法强连通分支",
+        "logo":"TODO"
     }
 ]
