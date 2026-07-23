@@ -1,57 +1,84 @@
-const start_point = /\/\/\s*\[start\]\s*(.*)$/
-const end_point = /\/\/\s*\[end\]\s*(.*)$/
-const start_end_point = /\/\/\s*\[start\s+end\]\s*(.*)$/
-//读取代码,分析代码的跳转
-
 export type pointJumpType = {
-    [key: string]: [number,number]
+    [key: string]: [number, number]
 }
 
-function str_hash(str: string) {
-    return str
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    //把hash转成hex string
-    let hex = (hash >>> 0).toString(16);
-    while (hex.length < 8) {
-        hex = '0' + hex;
-    }
-    return hex;
+export type RawCodeDiagnostic = {
+    type: 'duplicate' | 'orphan_end' | 'missing_end' | 'invalid'
+    name: string
+    line: number
 }
 
-export function read_raw_code(code: string) {
-    let code_split = code.split('\n')
-    console.log(code_split.length)
-    let __raw_code = []
-    let point_jump_info : pointJumpType = {}
-    for(let i = 0;i<code_split.length;i++) {
-        let line = code_split[i].trimEnd()
-        if( start_point.test(line) ) {
-            let res = start_point.exec(line)
-            let hash = str_hash(res![1])
-            point_jump_info[hash] = [i,0]
-            __raw_code.push(line.replace(start_point,''))
+export type RawCodeResult = {
+    point_jump_info: pointJumpType
+    code: string
+    diagnostics: RawCodeDiagnostic[]
+}
+
+const markerPattern = /\/\/\s*\[(start\s+end|start|end)\]\s*(.*)$/
+
+// Remove editor-only markers while keeping their original zero-based line ranges.
+export function read_raw_code(code: string): RawCodeResult {
+    const lines = code.split(/\r?\n/)
+    const cleanedLines: string[] = []
+    const pointJumpInfo: pointJumpType = {}
+    const openMarkers = new Map<string, number>()
+    const completedMarkers = new Set<string>()
+    const diagnostics: RawCodeDiagnostic[] = []
+
+    for (let index = 0; index < lines.length; index++) {
+        const line = lines[index].trimEnd()
+        const match = markerPattern.exec(line)
+        if (!match) {
+            cleanedLines.push(lines[index])
+            continue
         }
-        else if( end_point.test(line) ) {
-            let res = end_point.exec(line)
-            let hash = str_hash(res![1])
-            if( point_jump_info[hash] ) 
-                point_jump_info[hash][1] = i
-            __raw_code.push(line.replace(end_point,''))
+
+        const kind = match[1]
+        const name = match[2].trim()
+        cleanedLines.push(line.replace(markerPattern, ''))
+        if (!name) {
+            diagnostics.push({ type: 'invalid', name: '', line: index })
+            continue
         }
-        else if( start_end_point.test(line) ) {
-            let res = start_end_point.exec(line)
-            let hash = str_hash(res![1])
-            point_jump_info[hash] = [i,i]
-            __raw_code.push(line.replace(start_end_point,''))
+
+        if (kind === 'start end') {
+            if (openMarkers.has(name) || completedMarkers.has(name)) {
+                diagnostics.push({ type: 'duplicate', name, line: index })
+            } else {
+                pointJumpInfo[name] = [index, index]
+                completedMarkers.add(name)
+            }
+            continue
         }
-        else __raw_code.push(code_split[i])
+
+        if (kind === 'start') {
+            if (openMarkers.has(name) || completedMarkers.has(name)) {
+                diagnostics.push({ type: 'duplicate', name, line: index })
+            } else {
+                openMarkers.set(name, index)
+            }
+            continue
+        }
+
+        const startLine = openMarkers.get(name)
+        if (startLine === undefined) {
+            diagnostics.push({ type: 'orphan_end', name, line: index })
+            continue
+        }
+
+        pointJumpInfo[name] = [startLine, index]
+        openMarkers.delete(name)
+        completedMarkers.add(name)
     }
+
+    for (const [name, line] of openMarkers) {
+        diagnostics.push({ type: 'missing_end', name, line })
+    }
+
     return {
-        point_jump_info,
-        code: __raw_code.join('\n')
+        point_jump_info: pointJumpInfo,
+        code: cleanedLines.join('\n'),
+        diagnostics,
     }
 }
 

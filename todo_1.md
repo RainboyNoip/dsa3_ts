@@ -78,7 +78,7 @@ status: in-progress
 - [x] 引入 Vitest，新增 `test`、`test:watch` 和 `test:coverage` 脚本。
 - [ ] 每个算法测试最终结果，同时测试关键动画帧的状态不变量。
 - [ ] 将 `input_data/data.json` 中的样例作为回归测试夹具。
-- [ ] 测试 `read_raw_code()` 的成对标记、单行标记、重复标记和缺失标记。
+- [x] 测试 `read_raw_code()` 的成对标记、单行标记、重复标记和缺失标记。
 
 ### 浏览器测试
 
