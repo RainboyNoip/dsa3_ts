@@ -49,8 +49,7 @@ const init_graph = (nodes : NodeDefinition[],edges : EdgeDefinition[]) => {
     //运行fleury算法
     graph.value.readFromCytoscape(nodes,edges)
     Fleury.value.clear()
-    //@ts-ignore
-    Fleury.value.set_graph(graph.value)
+    Fleury.value.set_graph(graph.value as Graph)
     Fleury.value.set_pointJumpInfo(point_jump_info)
     Fleury.value.run()
 }
@@ -70,7 +69,6 @@ onMounted(() => {
 const frame_cnt = computed(() => Fleury.value.frame_cnt )
 
 const play_next = ()=>{
-  console.log(now_frame.value,frame_cnt.value)
   if( now_frame.value < frame_cnt.value)
     now_frame.value += 1
 }
@@ -101,7 +99,6 @@ const paly_frame = (frame_idx: number) => {
   // console.log(frame)
   for( let edge of frame.edges_state )
   {
-    console.log(edge)
     CY.edges(`[source = "${edge.source}"][target = "${edge.target}"]`).addClass(edge.class.join(' '))
     CY.edges(`[source = "${edge.target}"][target = "${edge.source}"]`).addClass(edge.class.join(' '))
     if( edge.dfn ){
@@ -123,7 +120,6 @@ const paly_frame = (frame_idx: number) => {
 watch(now_frame, (new_value, old_value) => {
   if( new_value != old_value)
   {
-    console.log(new_value)
     if( new_value <= 0)  {
       remove_cy_all_class();
       return 
