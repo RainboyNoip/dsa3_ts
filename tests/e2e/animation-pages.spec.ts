@@ -145,9 +145,8 @@ test.describe('animation pages', () => {
 
             if (path === '/Animate/bfs/') {
                 const dataSelect = page.getByLabel('选择图数据')
-                await dataSelect.click()
-                await page.getByText('数据2', { exact: true }).last().click()
-                await expect(dataSelect).toContainText('数据2')
+                await dataSelect.selectOption({ label: '数据2' })
+                await expect(dataSelect).toHaveValue('1')
                 await expect(previous).toBeDisabled()
             }
 

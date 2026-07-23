@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 
 const assetsDirectory = fileURLToPath(new URL('../dist/assets/', import.meta.url))
-const largestAssetBudget = 760_000
-const totalJavaScriptBudget = 1_550_000
+const largestAssetBudget = 580_000
+const totalJavaScriptBudget = 1_370_000
 
 if (!existsSync(assetsDirectory)) {
     throw new Error('dist/assets does not exist; run `bun run build` before `bun run size:check`.')

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { NButton, NButtonGroup, NInputNumber, NProgress } from 'naive-ui'
+import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
+import { NProgress } from 'naive-ui/es/progress'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
 import { animationIcons } from '@/components/animation-icons'
 
@@ -92,15 +94,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         <Icon :icon="animationIcons.clockwise" width="15" height="15" />
       </n-button>
     </n-button-group>
-    <n-input-number
-      v-model:value="jumpFrame"
+    <input
+      v-model.number="jumpFrame"
       class="animation-controls__jump shrink-0"
-      size="small"
+      type="number"
       :min="0"
       :max="frameCount"
       :disabled="frameCount === 0"
-      :show-button="false"
-      :input-props="{ 'aria-label': '跳转到帧', title: '跳转到帧' }"
+      aria-label="跳转到帧"
+      title="跳转到帧"
       @keydown.enter="jump"
     />
     <n-button
@@ -130,6 +132,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 
 .animation-controls__jump {
   width: 4.5rem;
+  min-height: 30px;
+  border: 1px solid #cfd8d4;
+  border-radius: 4px;
+  padding: 0 0.5rem;
+  background: #fff;
+  color: #18201f;
+  font: inherit;
+  text-align: center;
+}
+
+.animation-controls__jump:focus-visible {
+  outline: 3px solid rgb(23 107 91 / 30%);
+  outline-offset: 1px;
 }
 
 .animation-controls__progress {
@@ -156,7 +171,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     min-height: 44px;
   }
 
-  .animation-controls__jump :deep(.n-input) {
+  .animation-controls__jump {
     min-height: 44px;
   }
 }

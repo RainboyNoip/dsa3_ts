@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { NAlert, NButton, NInput, NModal } from 'naive-ui'
+import { NAlert } from 'naive-ui/es/alert'
+import { NButton } from 'naive-ui/es/button'
+import { NModal } from 'naive-ui/es/modal'
 import type { Graph } from '@/lib/graph_ts'
 import { GraphType } from '@/lib/graph_ts'
 import { parseGraphInput, type GraphInputRules } from '@/animation/graphInput'
@@ -57,16 +59,18 @@ const submit = (): void => {
       <p id="graph-input-help" class="m-0 text-sm text-gray-500">
         首行为节点数和边数，后续每行填写 u v 或 u v w。{{ limitDescription }}
       </p>
-      <n-input
-        v-model:value="input"
-        type="textarea"
-        :autosize="{ minRows: 8, maxRows: 18 }"
-        placeholder="例如：\n4 3\n1 2\n2 3\n3 4"
-        :input-props="{
-          'aria-label': '图数据文本',
-          'aria-describedby': 'graph-input-help',
-        }"
-      />
+      <textarea
+        v-model="input"
+        class="graph-input"
+        rows="8"
+        placeholder="例如：
+4 3
+1 2
+2 3
+3 4"
+        aria-label="图数据文本"
+        aria-describedby="graph-input-help"
+      ></textarea>
       <n-alert v-if="errorMessage" type="error" :show-icon="true">
         {{ errorMessage }}
       </n-alert>
@@ -78,3 +82,23 @@ const submit = (): void => {
     </div>
   </n-modal>
 </template>
+
+<style scoped>
+.graph-input {
+  width: 100%;
+  min-height: 12rem;
+  max-height: 28rem;
+  resize: vertical;
+  border: 1px solid #cfd8d4;
+  border-radius: 4px;
+  padding: 0.75rem;
+  background: #fff;
+  color: #18201f;
+  font: 0.875rem/1.5 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.graph-input:focus-visible {
+  outline: 3px solid rgb(23 107 91 / 30%);
+  outline-offset: 1px;
+}
+</style>

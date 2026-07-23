@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import { NButton, NSelect } from 'naive-ui'
+import { NButton } from 'naive-ui/es/button'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
 import type { Graph } from '@/lib/graph_ts'
 import { GraphType } from '@/lib/graph_ts'
@@ -192,11 +192,11 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
         :tabindex="isMobile ? 0 : undefined"
       >
         <div class="workspace-toolbar">
-          <n-select
-            v-model:value="selectedGraphValue"
-            :options="graphOptions"
-            aria-label="选择图数据"
-          />
+          <select v-model.number="selectedGraphValue" class="workspace-select" aria-label="选择图数据">
+            <option v-for="option in graphOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
           <n-button @click="inputDialogOpen = true">输入数据</n-button>
           <n-button
             quaternary
@@ -373,8 +373,22 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
   gap: 8px;
 }
 
-.workspace-toolbar :deep(.n-select) {
+.workspace-select {
+  min-width: 0;
   width: min(12.5rem, 100%);
+  min-height: 34px;
+  border: 1px solid #cfd8d4;
+  border-radius: 4px;
+  padding: 0 2rem 0 0.75rem;
+  background: #fff;
+  color: #18201f;
+  cursor: pointer;
+  font: inherit;
+}
+
+.workspace-select:focus-visible {
+  outline: 3px solid rgb(23 107 91 / 30%);
+  outline-offset: 1px;
 }
 
 .workspace-state-content {
@@ -401,7 +415,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
     min-height: 44px;
   }
 
-  .workspace-toolbar :deep(.n-base-selection) {
+  .workspace-select {
     min-height: 44px;
   }
 }
