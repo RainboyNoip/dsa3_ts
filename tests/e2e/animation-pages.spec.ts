@@ -110,6 +110,23 @@ test.describe('animation pages', () => {
         expect(editorRequests).toHaveLength(1)
     })
 
+    test('uses a dark code editor and highlights the BFS source line', async ({ page }) => {
+        const diagnostics = observeDiagnostics(page)
+        await page.setViewportSize({ width: 1440, height: 900 })
+        await page.goto('/Animate/bfs/')
+        await expect(page.locator('.ace_editor')).toBeVisible()
+
+        const editorBackground = await page.locator('.ace_editor').evaluate((element) => getComputedStyle(element).backgroundColor)
+        expect(editorBackground).toBe('rgb(39, 40, 34)')
+
+        await page.getByRole('button', { name: '下一帧' }).click()
+        const marker = page.locator('.ace_marker-layer .highlightLine')
+        await expect(marker).toHaveCount(1)
+        const markerBackground = await marker.evaluate((element) => getComputedStyle(element).backgroundColor)
+        expect(markerBackground).not.toBe('rgba(0, 0, 0, 0)')
+        expectNoDiagnostics(diagnostics)
+    })
+
     test('shows algorithm limits and blocks oversized graph input', async ({ page }) => {
         await page.goto('/Animate/fleury/')
         await page.getByRole('button', { name: '输入数据' }).click()

@@ -5,7 +5,7 @@
     class="code-editor"
     :value="code"
     lang="c_cpp"
-    theme="chrome"
+    theme="monokai"
     :readonly="true"
     :options="editorOptions"
   />
@@ -18,7 +18,7 @@ import type { Ace } from 'ace-builds'
 import { VAceEditor } from 'vue3-ace-editor'
 import type { VAceEditorInstance } from 'vue3-ace-editor/types'
 import 'ace-builds/src-noconflict/mode-c_cpp'
-import 'ace-builds/src-noconflict/theme-chrome'
+import 'ace-builds/src-noconflict/theme-monokai'
 
 const props = withDefaults(defineProps<{
   code: string
@@ -82,9 +82,25 @@ onBeforeUnmount(() => clearMarker())
   min-height: 0;
 }
 
-.highlightLine {
+:deep(.ace_editor) {
+  background: #272822;
+  color: #f8f8f2;
+}
+
+:deep(.ace_gutter) {
+  background: #1f201b;
+  color: #75715e;
+}
+
+:deep(.ace_gutter-active-line),
+:deep(.ace_active-line) {
+  background: rgb(255 255 255 / 7%);
+}
+
+:deep(.highlightLine) {
   position: absolute;
   z-index: 20;
-  background-color: rgb(22 163 74 / 18%);
+  background-color: rgb(166 226 46 / 24%);
+  box-shadow: inset 3px 0 0 #a6e22e;
 }
 </style>
