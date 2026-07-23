@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 export type DFSFrame = AnimationFrame & {
     dfn: NodeId[]
@@ -23,14 +24,14 @@ const emptyFrame = (): DFSFrame => ({
 
 export class DFS {
     public graph: Graph = new Graph()
-    private animation: DFSFrame[] = []
+    private animation = new AnimationTimeline<DFSFrame>()
     private jumpInfo: pointJumpType = {}
     private dfn: NodeId[] = []
     private visited = new Set<NodeId>()
     private result: DFSResult | null = null
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.jumpInfo = {}
         this.dfn = []
         this.visited.clear()
@@ -46,7 +47,7 @@ export class DFS {
     }
 
     run_dfs(start?: NodeId): DFSResult {
-        this.animation = []
+        this.animation.clear()
         this.dfn = []
         this.visited.clear()
         const startId = start ?? this.graph.getFirstVertex() ?? null
@@ -119,7 +120,7 @@ export class DFS {
 
     get_frame(index: number): DFSFrame {
         if (index <= 0) return emptyFrame()
-        return this.animation[index - 1] || emptyFrame()
+        return this.animation.get(index - 1) || emptyFrame()
     }
 
     public get frame_cnt(): number { return this.animation.length }

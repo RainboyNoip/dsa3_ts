@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult, EdgeState, NodeState } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 export type SccFrameStatus = 'running' | 'complete' | 'empty' | 'invalid'
 
@@ -46,7 +47,7 @@ const emptyFrame = (nodeIds: NodeId[] = []): SccFrame => ({
 })
 
 export class Dfsscc {
-    private animation: SccFrame[] = []
+    private animation = new AnimationTimeline<SccFrame>()
     private jumpInfo: pointJumpType
     private dfn = new Map<NodeId, number>()
     private low = new Map<NodeId, number>()
@@ -152,7 +153,7 @@ export class Dfsscc {
     }
 
     private resetRunState(): void {
-        this.animation = []
+        this.animation.clear()
         this.dfn.clear()
         this.low.clear()
         this.color.clear()
@@ -274,6 +275,6 @@ export class Dfsscc {
 
     get_frame(index: number): SccFrame {
         if (index <= 0) return emptyFrame(this.graph.node_ids)
-        return this.animation[index - 1] || emptyFrame(this.graph.node_ids)
+        return this.animation.get(index - 1) || emptyFrame(this.graph.node_ids)
     }
 }

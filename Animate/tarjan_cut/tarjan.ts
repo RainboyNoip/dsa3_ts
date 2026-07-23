@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult, EdgeState, NodeState } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 export type TarjanFrameStatus = 'running' | 'complete' | 'empty' | 'invalid'
 
@@ -35,7 +36,7 @@ const emptyFrame = (nodeIds: NodeId[] = []): TarjanFrame => ({
 
 export class TarjanCut {
     public graph: Graph
-    private animation: TarjanFrame[] = []
+    private animation = new AnimationTimeline<TarjanFrame>()
     private jumpInfo: pointJumpType = {}
     private dfn = new Map<NodeId, number>()
     private low = new Map<NodeId, number>()
@@ -49,7 +50,7 @@ export class TarjanCut {
     }
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.jumpInfo = {}
         this.dfn.clear()
         this.low.clear()
@@ -130,7 +131,7 @@ export class TarjanCut {
     }
 
     private resetRunState(): void {
-        this.animation = []
+        this.animation.clear()
         this.dfn.clear()
         this.low.clear()
         this.dfsTime = 0
@@ -259,7 +260,7 @@ export class TarjanCut {
 
     get_frame(index: number): TarjanFrame {
         if (index <= 0) return emptyFrame(this.graph.node_ids)
-        return this.animation[index - 1] || emptyFrame(this.graph.node_ids)
+        return this.animation.get(index - 1) || emptyFrame(this.graph.node_ids)
     }
 
     public get frame_cnt(): number { return this.animation.length }

@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 export type BFSFrame = AnimationFrame & {
     que: NodeId[]
@@ -29,12 +30,12 @@ const emptyFrame = (): BFSFrame => ({
 
 export class BFS {
     public graph: Graph = new Graph()
-    private animation: BFSFrame[] = []
+    private animation = new AnimationTimeline<BFSFrame>()
     private jumpInfo: pointJumpType = {}
     private result: BFSResult | null = null
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.jumpInfo = {}
         this.result = null
     }
@@ -50,7 +51,7 @@ export class BFS {
     }
 
     run_bfs(start?: NodeId): BFSResult {
-        this.animation = []
+        this.animation.clear()
         const startId = start ?? this.graph.getFirstVertex() ?? null
         if (startId === null) {
             this.result = { status: 'empty', scope: 'reachable_component', start: null, order: [] }
@@ -165,7 +166,7 @@ export class BFS {
 
     get_frame(index: number): BFSFrame {
         if (index <= 0) return emptyFrame()
-        return this.animation[index - 1] || emptyFrame()
+        return this.animation.get(index - 1) || emptyFrame()
     }
 
     public get frame_cnt(): number { return this.animation.length }

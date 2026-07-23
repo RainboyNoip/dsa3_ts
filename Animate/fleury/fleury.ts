@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult, EdgeState } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 type EulerEdge = {
     id: number
@@ -35,7 +36,7 @@ const emptyFrame = (): FleuryFrame => ({
 
 export class fleury {
     private graph: Graph = new Graph()
-    private animation: FleuryFrame[] = []
+    private animation = new AnimationTimeline<FleuryFrame>()
     private jumpInfo: pointJumpType = {}
     private allEdges: EulerEdge[] = []
     private remainingEdges: EulerEdge[] = []
@@ -45,7 +46,7 @@ export class fleury {
     private result: FleuryResult | null = null
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.allEdges = []
         this.remainingEdges = []
         this.removedEdges = []
@@ -178,7 +179,7 @@ export class fleury {
     }
 
     private resetRunState(): void {
-        this.animation = []
+        this.animation.clear()
         this.remainingEdges = [...this.allEdges]
         this.removedEdges = []
         this.path = []
@@ -319,7 +320,7 @@ export class fleury {
 
     get_frame(index: number): FleuryFrame {
         if (index <= 0) return emptyFrame()
-        return this.animation[index - 1] || emptyFrame()
+        return this.animation.get(index - 1) || emptyFrame()
     }
 
     public get frame_cnt(): number { return this.animation.length }

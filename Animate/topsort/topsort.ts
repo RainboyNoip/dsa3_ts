@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 export type TopSortStatus = 'idle' | 'running' | 'complete' | 'cycle'
 
@@ -28,7 +29,7 @@ const emptyFrame = (): TopSortFrame => ({
 
 export class topsort {
     public graph: Graph
-    private animation: TopSortFrame[] = []
+    private animation = new AnimationTimeline<TopSortFrame>()
     private jumpInfo: pointJumpType = {}
     private in_degree = new Map<NodeId, number>()
     private queue: NodeId[] = []
@@ -41,7 +42,7 @@ export class topsort {
     }
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.jumpInfo = {}
         this.in_degree.clear()
         this.queue = []
@@ -106,7 +107,7 @@ export class topsort {
     }
 
     run_top_sort(): TopSortResult {
-        this.animation = []
+        this.animation.clear()
         this.in_degree.clear()
         this.queue = []
         this.topsort_list = []
@@ -181,7 +182,7 @@ export class topsort {
         if (index <= 0) {
             return emptyFrame()
         }
-        return this.animation[index - 1] || emptyFrame()
+        return this.animation.get(index - 1) || emptyFrame()
     }
 
     public get frame_cnt(): number {

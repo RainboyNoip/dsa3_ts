@@ -1,6 +1,7 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
 import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
+import { AnimationTimeline } from '../../src/animation/animationTimeline'
 
 type QueItem = [NodeId, number]
 
@@ -27,12 +28,12 @@ const emptyFrame = (): BFSShortestPathFrame => ({
 
 export class BFS_SP {
     public graph: Graph = new Graph()
-    private animation: BFSShortestPathFrame[] = []
+    private animation = new AnimationTimeline<BFSShortestPathFrame>()
     private jumpInfo: pointJumpType = {}
     private result: BFSShortestPathResult | null = null
 
     clear(): void {
-        this.animation = []
+        this.animation.clear()
         this.jumpInfo = {}
         this.result = null
     }
@@ -59,7 +60,7 @@ export class BFS_SP {
     }
 
     run_bfs_sp(start?: NodeId): BFSShortestPathResult {
-        this.animation = []
+        this.animation.clear()
         const startId = start ?? this.graph.getFirstVertex() ?? null
         const distances = new Map<NodeId, number>(this.graph.node_ids.map((id) => [id, Infinity]))
         const predecessor = new Map<NodeId, NodeId | null>(this.graph.node_ids.map((id) => [id, null]))
@@ -154,7 +155,7 @@ export class BFS_SP {
 
     get_frame(index: number): BFSShortestPathFrame {
         if (index <= 0) return emptyFrame()
-        return this.animation[index - 1] || emptyFrame()
+        return this.animation.get(index - 1) || emptyFrame()
     }
 
     public get frame_cnt(): number { return this.animation.length }
