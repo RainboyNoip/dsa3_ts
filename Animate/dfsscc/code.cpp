@@ -77,25 +77,25 @@ void init(){
 }
 
 void dfsscc(int u) {
-    vis[u] = 1;
+    vis[u] = 1; // [start] set some value
     dfn[u] = low[u] = ++_time;
     sta.push(u); //入栈
-    in_sta[u] = 1;
+    in_sta[u] = 1; // [end] set some value
     for(int i = e(u);i != -1 ;i= e[i].next)
     {
         int v = e[i].v;
-        if( vis[v] == 0)
+        if( vis[v] == 0) // [start] not visited
         {
-            dfsscc(v);
+            dfsscc(v); // [end] not visited
 
             //孩子能通过返祖边到的最早祖先,更新自己
-            low[u] = min(low[u],low[v]);
+            low[u] = min(low[u],low[v]); // [start end] update_low_1
         }
-        else if( in_sta[v] )
+        else if( in_sta[v] ) // [start] update_low_2
         {
             // 一条返祖边
-            low[u] = min(low[u],dfn[v]);
-        }
+            low[u] = min(low[u],dfn[v]); 
+        } // [end] update_low_2
     }
     //退出点u时，进行检查
     if( low[u] == dfn[u]) { // 回不到更早点
@@ -103,10 +103,10 @@ void dfsscc(int u) {
         int t;
         color_idx++;
         do {
-            t = sta.top();
+            t = sta.top(); // [start] set strong connected component
             sta.pop();
             in_sta[t] = 0;
-            color[t] = color_idx;
+            color[t] = color_idx; // [end] set strong connected component
         }while( t != u);
     }
 }
@@ -116,7 +116,11 @@ void dfsscc(int u) {
 int main () {
     std::ios::sync_with_stdio(false); cin.tie(0); cout.tie(0); // 关闭io同步
     init();
-    dfsscc(1);
+    for(int i =1;i<=n;i++)
+    {
+        if( vis[i] == 0) //如果没有访问过
+            dfsscc(1); // [start end] dfsscc_start
+    }
     //输出每个点的强连通编号
     for(int i = 1;i <= n ;++i ) // i: 1->n
     {
