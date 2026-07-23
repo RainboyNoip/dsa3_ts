@@ -318,7 +318,8 @@ export class fleury {
     }
 
     get_frame(index: number): FleuryFrame {
-        return this.animation[index] || emptyFrame()
+        if (index <= 0) return emptyFrame()
+        return this.animation[index - 1] || emptyFrame()
     }
 
     public get frame_cnt(): number { return this.animation.length }

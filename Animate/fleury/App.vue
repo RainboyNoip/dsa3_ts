@@ -40,8 +40,7 @@ const applyFrame = (index: number): void => {
         return
     }
 
-    // Fleury stores frames zero-based; the shared player reserves 0 for the reset state.
-    const frame = fleuryAlgorithm.value.get_frame(index - 1)
+    const frame = fleuryAlgorithm.value.get_frame(index)
     renderer.applyFrame(frame)
     jumpLine.value = [...frame.jump]
     log.value = frame.log

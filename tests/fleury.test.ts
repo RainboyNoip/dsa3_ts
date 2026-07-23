@@ -21,7 +21,8 @@ describe('Fleury Euler trail', () => {
         expect(result.path).toHaveLength(4)
         expect(result.path[0]).toBe(result.path[result.path.length - 1])
         expect(result.edges).toHaveLength(3)
-        expect(algorithm.get_frame(algorithm.frame_cnt - 1).status).toBe('complete')
+        expect(algorithm.get_frame(0).status).toBe('empty')
+        expect(algorithm.get_frame(algorithm.frame_cnt).status).toBe('complete')
     })
 
     it('starts at an odd-degree vertex and leaves a bridge until the end', () => {
