@@ -1,36 +1,22 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
-
-type EdgeState = {
-    source: NodeId
-    target: NodeId
-    class: string[]
-}
-
-type NodeState = {
-    id: NodeId
-    class: string[]
-}
+import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
 
 export type TopSortStatus = 'idle' | 'running' | 'complete' | 'cycle'
 
-type Frame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type TopSortFrame = AnimationFrame<TopSortStatus> & {
     que: NodeId[]
     top_sort: NodeId[]
     log: string
     status: TopSortStatus
 }
 
-export type TopSortResult = {
-    status: Exclude<TopSortStatus, 'idle' | 'running'>
+export type TopSortResult = AnimationResult<Exclude<TopSortStatus, 'idle' | 'running'>, {
     order: NodeId[]
     remaining: NodeId[]
-}
+}>
 
-const emptyFrame = (): Frame => ({
+const emptyFrame = (): TopSortFrame => ({
     edges_state: [],
     nodes_state: [],
     que: [],
@@ -42,7 +28,7 @@ const emptyFrame = (): Frame => ({
 
 export class topsort {
     public graph: Graph
-    private animation: Frame[] = []
+    private animation: TopSortFrame[] = []
     private jumpInfo: pointJumpType = {}
     private in_degree = new Map<NodeId, number>()
     private queue: NodeId[] = []
@@ -191,7 +177,7 @@ export class topsort {
         return this.result
     }
 
-    get_frame(index: number): Frame {
+    get_frame(index: number): TopSortFrame {
         if (index <= 0) {
             return emptyFrame()
         }

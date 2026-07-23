@@ -1,17 +1,6 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
-
-type EdgeState = {
-    source: NodeId
-    target: NodeId
-    class: string[]
-    dfn?: number
-}
-
-type NodeState = {
-    id: NodeId
-    class: string[]
-}
+import type { AnimationFrame, AnimationResult, EdgeState } from '../../src/animation/animationTypes'
 
 type EulerEdge = {
     id: number
@@ -21,23 +10,18 @@ type EulerEdge = {
 
 export type FleuryFrameStatus = 'running' | 'complete' | 'empty' | 'invalid' | 'no_euler_trail'
 
-export type FleuryFrame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type FleuryFrame = AnimationFrame<FleuryFrameStatus> & {
     path: NodeId[]
     current: NodeId | null
     status: FleuryFrameStatus
     log: string
 }
 
-export type FleuryResult = {
-    status: 'complete' | 'empty' | 'invalid_start' | 'invalid_graph' | 'no_euler_trail'
+export type FleuryResult = AnimationResult<'complete' | 'empty' | 'invalid_start' | 'invalid_graph' | 'no_euler_trail', {
     start: NodeId | null
     path: NodeId[]
     edges: Array<[NodeId, NodeId]>
-    error?: string
-}
+}>
 
 const emptyFrame = (): FleuryFrame => ({
     edges_state: [],

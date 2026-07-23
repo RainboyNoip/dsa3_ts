@@ -1,15 +1,10 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
-
-type EdgeState = { source: NodeId; target: NodeId; class: string[] }
-type NodeState = { id: NodeId; class: string[] }
+import type { AnimationFrame, AnimationResult, EdgeState, NodeState } from '../../src/animation/animationTypes'
 
 export type TarjanFrameStatus = 'running' | 'complete' | 'empty' | 'invalid'
 
-export type TarjanFrame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type TarjanFrame = AnimationFrame<TarjanFrameStatus> & {
     node_ids: NodeId[]
     dfn: number[]
     low: number[]
@@ -19,13 +14,11 @@ export type TarjanFrame = {
     log: string
 }
 
-export type TarjanCutResult = {
-    status: 'complete' | 'empty' | 'invalid_start' | 'invalid_graph'
+export type TarjanCutResult = AnimationResult<'complete' | 'empty' | 'invalid_start' | 'invalid_graph', {
     cut_nodes: NodeId[]
     visited: NodeId[]
     start: NodeId | null
-    error?: string
-}
+}>
 
 const emptyFrame = (nodeIds: NodeId[] = []): TarjanFrame => ({
     edges_state: [],

@@ -1,25 +1,18 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
+import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
 
-type EdgeState = { source: NodeId; target: NodeId; class: string[] }
-type NodeState = { id: NodeId; class: string[] }
-
-type Frame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type DFSFrame = AnimationFrame & {
     dfn: NodeId[]
     log: string
 }
 
-export type DFSResult = {
-    status: 'complete' | 'empty' | 'invalid_start'
+export type DFSResult = AnimationResult<'complete' | 'empty' | 'invalid_start', {
     start: NodeId | null
     order: NodeId[]
-    error?: string
-}
+}>
 
-const emptyFrame = (): Frame => ({
+const emptyFrame = (): DFSFrame => ({
     edges_state: [],
     nodes_state: [],
     dfn: [],
@@ -29,7 +22,7 @@ const emptyFrame = (): Frame => ({
 
 export class DFS {
     public graph: Graph = new Graph()
-    private animation: Frame[] = []
+    private animation: DFSFrame[] = []
     private jumpInfo: pointJumpType = {}
     private dfn: NodeId[] = []
     private visited = new Set<NodeId>()
@@ -117,7 +110,7 @@ export class DFS {
         }
     }
 
-    get_frame(index: number): Frame {
+    get_frame(index: number): DFSFrame {
         if (index <= 0) return emptyFrame()
         return this.animation[index - 1] || emptyFrame()
     }

@@ -1,24 +1,10 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
-
-type EdgeState = {
-    source: NodeId
-    target: NodeId
-    class: string[]
-}
-
-type NodeState = {
-    id: NodeId
-    class: string[]
-    color: string
-}
+import type { AnimationFrame, AnimationResult, EdgeState, NodeState } from '../../src/animation/animationTypes'
 
 export type SccFrameStatus = 'running' | 'complete' | 'empty' | 'invalid'
 
-export type SccFrame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type SccFrame = AnimationFrame<SccFrameStatus> & {
     node_ids: NodeId[]
     color: number[]
     stack: NodeId[]
@@ -28,14 +14,12 @@ export type SccFrame = {
     log: string
 }
 
-export type DfssccResult = {
-    status: 'complete' | 'empty' | 'invalid_start' | 'invalid_graph'
+export type DfssccResult = AnimationResult<'complete' | 'empty' | 'invalid_start' | 'invalid_graph', {
     start: NodeId | null
     visited: NodeId[]
     components: NodeId[][]
     component_by_node: Map<NodeId, number>
-    error?: string
-}
+}>
 
 const palette = [
     '#2563eb',

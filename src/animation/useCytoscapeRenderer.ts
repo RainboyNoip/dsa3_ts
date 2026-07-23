@@ -1,11 +1,8 @@
 import { onBeforeUnmount, shallowRef, type Ref } from 'vue'
 import type { Core, EdgeDefinition, NodeDefinition } from 'cytoscape'
-import type { NodeId } from '../lib/graph_ts'
+import type { AnimationFrame } from './animationTypes'
 
-export type CytoscapeFrame = {
-    edges_state: Array<{ source: NodeId; target: NodeId; class: string[]; dfn?: number }>
-    nodes_state: Array<{ id: NodeId; class: string[]; color?: string }>
-}
+export type CytoscapeFrame = Pick<AnimationFrame, 'edges_state' | 'nodes_state'>
 
 type CreateCytoscape = (
     container: HTMLElement,

@@ -1,28 +1,22 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
+import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
 
-type EdgeState = { source: NodeId; target: NodeId; class: string[] }
-type NodeState = { id: NodeId; class: string[] }
 type QueItem = [NodeId, number]
 
-type Frame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type BFSShortestPathFrame = AnimationFrame & {
     que: QueItem[]
     head: QueItem | null
     log: string
 }
 
-export type BFSShortestPathResult = {
-    status: 'complete' | 'empty' | 'invalid_start'
+export type BFSShortestPathResult = AnimationResult<'complete' | 'empty' | 'invalid_start', {
     start: NodeId | null
     distances: Map<NodeId, number>
     predecessor: Map<NodeId, NodeId | null>
-    error?: string
-}
+}>
 
-const emptyFrame = (): Frame => ({
+const emptyFrame = (): BFSShortestPathFrame => ({
     edges_state: [],
     nodes_state: [],
     que: [],
@@ -33,7 +27,7 @@ const emptyFrame = (): Frame => ({
 
 export class BFS_SP {
     public graph: Graph = new Graph()
-    private animation: Frame[] = []
+    private animation: BFSShortestPathFrame[] = []
     private jumpInfo: pointJumpType = {}
     private result: BFSShortestPathResult | null = null
 
@@ -158,7 +152,7 @@ export class BFS_SP {
         return this.result
     }
 
-    get_frame(index: number): Frame {
+    get_frame(index: number): BFSShortestPathFrame {
         if (index <= 0) return emptyFrame()
         return this.animation[index - 1] || emptyFrame()
     }

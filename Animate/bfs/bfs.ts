@@ -1,13 +1,8 @@
 import { Graph, NodeId } from '../../src/lib/graph_ts'
 import { pointJumpType } from '../../src/lib/read_raw_code'
+import type { AnimationFrame, AnimationResult } from '../../src/animation/animationTypes'
 
-type EdgeState = { source: NodeId; target: NodeId; class: string[] }
-type NodeState = { id: NodeId; class: string[] }
-
-type Frame = {
-    edges_state: EdgeState[]
-    nodes_state: NodeState[]
-    jump: [number, number]
+export type BFSFrame = AnimationFrame & {
     que: NodeId[]
     visited: NodeId[]
     head: NodeId | null
@@ -15,14 +10,12 @@ type Frame = {
     log: string
 }
 
-export type BFSResult = {
-    status: 'complete' | 'empty' | 'invalid_start'
+export type BFSResult = AnimationResult<'complete' | 'empty' | 'invalid_start', {
     start: NodeId | null
     order: NodeId[]
-    error?: string
-}
+}>
 
-const emptyFrame = (): Frame => ({
+const emptyFrame = (): BFSFrame => ({
     edges_state: [],
     nodes_state: [],
     que: [],
@@ -35,7 +28,7 @@ const emptyFrame = (): Frame => ({
 
 export class BFS {
     public graph: Graph = new Graph()
-    private animation: Frame[] = []
+    private animation: BFSFrame[] = []
     private jumpInfo: pointJumpType = {}
     private result: BFSResult | null = null
 
@@ -163,7 +156,7 @@ export class BFS {
         return this.result
     }
 
-    get_frame(index: number): Frame {
+    get_frame(index: number): BFSFrame {
         if (index <= 0) return emptyFrame()
         return this.animation[index - 1] || emptyFrame()
     }
