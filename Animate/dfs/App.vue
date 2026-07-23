@@ -17,6 +17,7 @@ import { initCytoscape } from './cyto'
 const { code, point_jump_info } = read_raw_code(rawCode)
 const defaultGraphSelectorOptions = defaultGraphData.map((item, index) => ({ label: item.name, value: index }))
 const sampleInput = serializeGraphInput(defaultGraphData[0].nodes, defaultGraphData[0].edges, GraphType.undigraph)
+const inputRules = { allowWeights: false }
 
 const cyContainer = ref<HTMLElement | null>(null)
 const selectedGraph = ref(0)
@@ -84,6 +85,7 @@ const applyInputGraph = (inputGraph: Graph): void => {
     :graph-options="defaultGraphSelectorOptions"
     :graph-type="GraphType.undigraph"
     :sample-input="sampleInput"
+    :input-rules="inputRules"
     @input-data="applyInputGraph"
   >
     <template #state>

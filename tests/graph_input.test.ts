@@ -23,6 +23,27 @@ describe('graph input helpers', () => {
         })
     })
 
+    it('rejects unsupported weights and disconnected active nodes', () => {
+        expect(parseGraphInput('3 2\n1 2 5\n2 3', GraphType.undigraph, {
+            allowWeights: false,
+        })).toEqual({
+            ok: false,
+            error: '第 2 行不支持边权，当前算法只接受 u v',
+        })
+
+        expect(parseGraphInput('4 2\n1 2\n3 4', GraphType.undigraph, {
+            requireConnected: true,
+        })).toEqual({
+            ok: false,
+            error: '非孤立节点不连通，当前算法需要连通图',
+        })
+
+        const isolated = parseGraphInput('4 1\n1 2', GraphType.undigraph, {
+            requireConnected: true,
+        })
+        expect(isolated.ok).toBe(true)
+    })
+
     it('serializes Cytoscape data into the dialog format', () => {
         const result = serializeGraphInput(
             [{ data: { id: '1' } }, { data: { id: '2' } }],

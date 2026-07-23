@@ -3,12 +3,13 @@ import { computed, ref, watch } from 'vue'
 import { NAlert, NButton, NInput, NModal } from 'naive-ui'
 import type { Graph } from '@/lib/graph_ts'
 import { GraphType } from '@/lib/graph_ts'
-import { parseGraphInput } from '@/animation/graphInput'
+import { parseGraphInput, type GraphInputRules } from '@/animation/graphInput'
 
 const props = defineProps<{
     show: boolean
     sample: string
     graphType: GraphType
+    rules?: GraphInputRules
 }>()
 
 const emit = defineEmits<{
@@ -18,7 +19,7 @@ const emit = defineEmits<{
 
 const input = ref('')
 
-const validation = computed(() => parseGraphInput(input.value, props.graphType))
+const validation = computed(() => parseGraphInput(input.value, props.graphType, props.rules))
 const errorMessage = computed(() => validation.value.ok ? '' : validation.value.error)
 
 watch(() => props.show, (show) => {

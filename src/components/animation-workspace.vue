@@ -5,6 +5,7 @@ import { NButton, NSelect } from 'naive-ui'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
 import type { Graph } from '@/lib/graph_ts'
 import { GraphType } from '@/lib/graph_ts'
+import type { GraphInputRules } from '@/animation/graphInput'
 import AnimationControls from '@/components/animation-controls.vue'
 import AnimationInputDialog from '@/components/animation-input-dialog.vue'
 import SpliteLayout from '@/components/splite_layout_unocss.vue'
@@ -21,6 +22,7 @@ const props = defineProps<{
     selectedGraph: number
     graphType: GraphType
     sampleInput: string
+    inputRules?: GraphInputRules
 }>()
 
 const emit = defineEmits<{
@@ -88,6 +90,7 @@ const goHome = (): void => {
       v-model:show="inputDialogOpen"
       :sample="sampleInput"
       :graph-type="graphType"
+      :rules="inputRules"
       @submit="emit('input-data', $event)"
     />
   </div>
