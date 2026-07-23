@@ -57,6 +57,8 @@ export class fleury {
 
     set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
 
+    set_frames(frames: readonly FleuryFrame[]): void { this.animation.replace(frames) }
+
     set_graph(graph: Graph): void {
         this.graph = graph
         this.clear()

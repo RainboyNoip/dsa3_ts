@@ -40,6 +40,7 @@ export class BFS_SP {
 
     set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
     set_graph(graph: Graph): void { this.graph = graph }
+    set_frames(frames: readonly BFSShortestPathFrame[]): void { this.animation.replace(frames) }
     get_result(): BFSShortestPathResult | null { return this.result }
 
     get_path(target: NodeId): NodeId[] {

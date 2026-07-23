@@ -73,6 +73,8 @@ export class Dfsscc {
         this.jumpInfo = jumpInfo
     }
 
+    set_frames(frames: readonly SccFrame[]): void { this.animation.replace(frames) }
+
     set_graph(graph: Graph): void {
         this.graph = graph
         this.resetRunState()

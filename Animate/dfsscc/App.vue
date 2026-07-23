@@ -6,12 +6,13 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/lazy-code-editor'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
-import { formatAnimationBudgetError, isAnimationBudgetExceeded } from '@/animation/animationBudget'
+import { formatAnimationRunError, isAnimationBudgetExceeded } from '@/animation/animationBudget'
+import { isAnimationWorkerError, runAnimationInWorker, shouldUseAnimationWorker } from '@/animation/animationWorkerClient'
 import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
 import rawCode from './code.cpp?raw'
 import defaultGraphData from './input_data/data.json'
-import { Dfsscc } from './dfsscc'
+import { Dfsscc, type SccFrame } from './dfsscc'
 import { Graph, GraphType } from '../../src/lib/graph_ts'
 import { initCytoscape } from './cyto'
 
@@ -32,6 +33,7 @@ const {
 
 const jumpLine = ref<[number, number]>([-1, -1])
 const log = ref('')
+let initSequence = 0
 
 const applyFrame = (index: number): void => {
     if (index <= 0) {
@@ -47,20 +49,38 @@ const applyFrame = (index: number): void => {
     log.value = frame.log
 }
 
-const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
+const initGraph = async (nodes: NodeDefinition[], edges: EdgeDefinition[]): Promise<void> => {
+    const sequence = ++initSequence
     if (!renderer.mount(nodes, edges)) return
     graph.value.readFromCytoscape(nodes, edges)
     dfsscc.value = new Dfsscc(graph.value as Graph, point_jump_info)
+    player.setFrameCount(0)
+    player.reset()
+    applyFrame(0)
     try {
-        dfsscc.value.run_dfsscc()
+        if (shouldUseAnimationWorker(nodes.length, edges.length)) {
+            const frames = await runAnimationInWorker<SccFrame>({
+                algorithm: 'dfsscc',
+                graphType: GraphType.digraph,
+                nodes,
+                edges,
+                jumpInfo: point_jump_info,
+            })
+            if (sequence !== initSequence) return
+            dfsscc.value.set_frames(frames)
+        } else {
+            dfsscc.value.run_dfsscc()
+        }
     } catch (error) {
-        if (!isAnimationBudgetExceeded(error)) throw error
+        if (sequence !== initSequence) return
+        if (!isAnimationBudgetExceeded(error) && !isAnimationWorkerError(error)) throw error
         player.setFrameCount(0)
         player.reset()
         applyFrame(0)
-        log.value = formatAnimationBudgetError(error)
+        log.value = formatAnimationRunError(error)
         return
     }
+    if (sequence !== initSequence) return
     player.setFrameCount(dfsscc.value.frame_cnt)
     player.reset()
     applyFrame(0)

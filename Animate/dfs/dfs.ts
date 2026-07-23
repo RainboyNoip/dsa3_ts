@@ -40,6 +40,7 @@ export class DFS {
 
     set_pointJumpInfo(jumpInfo: pointJumpType): void { this.jumpInfo = jumpInfo }
     set_graph(graph: Graph): void { this.graph = graph }
+    set_frames(frames: readonly DFSFrame[]): void { this.animation.replace(frames) }
     get_result(): DFSResult | null { return this.result }
 
     private jump(name: string): [number, number] {

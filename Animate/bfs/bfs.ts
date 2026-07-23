@@ -44,6 +44,8 @@ export class BFS {
 
     set_graph(graph: Graph): void { this.graph = graph }
 
+    set_frames(frames: readonly BFSFrame[]): void { this.animation.replace(frames) }
+
     get_result(): BFSResult | null { return this.result }
 
     private jump(name: string): [number, number] {

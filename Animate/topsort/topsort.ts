@@ -59,6 +59,8 @@ export class topsort {
         this.graph = graph
     }
 
+    set_frames(frames: readonly TopSortFrame[]): void { this.animation.replace(frames) }
+
     get_result(): TopSortResult | null {
         return this.result
     }

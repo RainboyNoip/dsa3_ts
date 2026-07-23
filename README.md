@@ -62,6 +62,7 @@ bun run test:e2e
 src/
   algorithmRegistry.ts              # 算法元数据和入口的单一配置源
   animation/                        # 公共动画类型、播放器和图渲染器
+  animation/algorithmWorker.ts     # 大图动画计算 Worker
   components/                       # 公共工作区、控制栏、输入和代码组件
   App.vue                           # 算法目录首页
 build/
@@ -90,6 +91,7 @@ tests/
 
 当前构建体积基线与依赖构成见 `docs/bundle-analysis.md`。
 动画帧内存基线与测量口径见 `docs/animation-memory.md`。
+节点数达到 24 或边数达到 64 时，算法动画会自动切换到 Web Worker；小图继续使用同步路径以减少启动开销。
 
 ## 部署
 

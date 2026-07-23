@@ -122,6 +122,22 @@ test.describe('animation pages', () => {
         await expect(page.getByRole('button', { name: '应用数据' })).toBeEnabled()
     })
 
+    test('offloads large graph animation generation to a Web Worker', async ({ page }) => {
+        const diagnostics = observeDiagnostics(page)
+        const workerUrls: string[] = []
+        page.on('worker', (worker) => workerUrls.push(worker.url()))
+        await page.goto('/Animate/bfs/')
+        await page.getByRole('button', { name: '输入数据' }).click()
+
+        const edges = Array.from({ length: 23 }, (_, index) => `${index + 1} ${index + 2}`)
+        await page.getByLabel('图数据文本').fill(['24 23', ...edges].join('\n'))
+        await page.getByRole('button', { name: '应用数据' }).click()
+
+        await expect(page.getByRole('button', { name: '下一帧' })).toBeEnabled()
+        expect(workerUrls.some((url) => url.includes('algorithmWorker'))).toBe(true)
+        expectNoDiagnostics(diagnostics)
+    })
+
     test('supports desktop playback controls on every algorithm page', async ({ page }) => {
         await page.setViewportSize({ width: 1440, height: 900 })
 
