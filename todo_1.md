@@ -105,7 +105,7 @@ status: in-progress
 
 ### 公共组件与组合函数
 
-- [ ] 创建 `AnimationWorkspace.vue`，统一标题、返回首页、数据选择、播放栏、图区域、状态区和代码区。
+- [x] 创建 `AnimationWorkspace.vue`，统一标题、返回首页、数据选择、播放栏、图区域、状态 slot 和代码区；7 个动画页已完成迁移。
 - [x] 创建 `useAnimationPlayer()`，统一当前帧、上一帧、下一帧、跳转和边界禁用状态。
 - [x] 在播放器中补充自动播放、暂停和重新开始，并迁移到所有动画页；控制栏统一由 `AnimationControls` 渲染。
 - [x] 创建 `useCytoscapeRenderer()`，管理初始化、销毁、批量更新和帧状态应用。
