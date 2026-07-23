@@ -52,8 +52,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-  <div class="flex w-full min-w-0 items-center justify-center gap-2">
-    <n-button-group class="shrink-0">
+  <div class="animation-controls flex w-full min-w-0 items-center justify-center gap-2">
+    <n-button-group class="animation-controls__group shrink-0">
       <n-button
         :disabled="isAtStart"
         aria-label="上一帧"
@@ -87,13 +87,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         title="重新开始"
         @click="player.restart"
       >
-        <Icon icon="fluent:arrow-reset-16-regular" width="15" height="15" />
+        <Icon icon="fluent:arrow-clockwise-16-regular" width="15" height="15" />
       </n-button>
     </n-button-group>
     <n-input-number
       v-model:value="jumpFrame"
-      class="shrink-0"
-      style="width: 4.5rem"
+      class="animation-controls__jump shrink-0"
       size="small"
       :min="0"
       :max="frameCount"
@@ -113,8 +112,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
       <Icon icon="fluent:arrow-enter-16-regular" width="15" height="15" />
     </n-button>
     <n-progress
-      class="min-w-0 flex-1"
-      style="max-width: 28rem"
+      class="animation-controls__progress min-w-0 flex-1"
       type="line"
       :percentage="progress"
     >
@@ -122,3 +120,42 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     </n-progress>
   </div>
 </template>
+
+<style scoped>
+.animation-controls {
+  flex-wrap: wrap;
+}
+
+.animation-controls__jump {
+  width: 4.5rem;
+}
+
+.animation-controls__progress {
+  max-width: 28rem;
+}
+
+@media (max-width: 767px) {
+  .animation-controls {
+    justify-content: flex-start;
+  }
+
+  .animation-controls__jump {
+    width: 3.5rem !important;
+  }
+
+  .animation-controls__progress {
+    flex-basis: 100%;
+    max-width: none;
+    order: 3;
+  }
+
+  .animation-controls :deep(.n-button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .animation-controls__jump :deep(.n-input) {
+    min-height: 44px;
+  }
+}
+</style>

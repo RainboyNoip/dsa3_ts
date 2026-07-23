@@ -21,8 +21,11 @@ export function useCytoscapeRenderer(
     let currentNodes: NodeDefinition[] = []
     let currentEdges: EdgeDefinition[] = []
     let currentFrame: CytoscapeFrame | null = null
+    let resizeObserver: ResizeObserver | null = null
 
     const destroy = (): void => {
+        resizeObserver?.disconnect()
+        resizeObserver = null
         instance.value?.destroy()
         instance.value = null
     }
@@ -34,6 +37,10 @@ export function useCytoscapeRenderer(
         currentFrame = null
         if (!container.value) return null
         instance.value = createCytoscape(container.value, nodes, edges)
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => instance.value?.resize())
+            resizeObserver.observe(container.value)
+        }
         return instance.value
     }
 
