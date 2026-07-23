@@ -8,6 +8,7 @@ import { Dfsscc } from '../Animate/dfsscc/dfsscc'
 import { fleury } from '../Animate/fleury/fleury'
 import { TarjanCut } from '../Animate/tarjan_cut/tarjan'
 import { topsort } from '../Animate/topsort/topsort'
+import { KMP } from '../Animate/kmp/kmp'
 
 const graphOf = (
     type: GraphType,
@@ -31,6 +32,28 @@ const expectCommonFrameState = <Frame extends AnimationFrame>(
 }
 
 describe('animation frame invariants', () => {
+    it('keeps KMP pointers, prefix tables, and comparison locations bounded', () => {
+        const algorithm = new KMP()
+        algorithm.set_input('ABABDABACDABABCABAB', 'ABABCABAB')
+        algorithm.run()
+
+        for (let index = 0; index <= algorithm.frame_cnt; index += 1) {
+            const frame = algorithm.get_frame(index)
+            expect(frame.lps).toHaveLength(frame.pattern.length)
+            expect(frame.i).toBeGreaterThanOrEqual(0)
+            expect(frame.i).toBeLessThanOrEqual(frame.text.length)
+            expect(frame.j).toBeGreaterThanOrEqual(0)
+            expect(frame.j).toBeLessThanOrEqual(frame.pattern.length)
+            expect(frame.jump).toHaveLength(2)
+            if (frame.compare) {
+                expect(frame.compare.textIndex).toBeGreaterThanOrEqual(0)
+                expect(frame.compare.textIndex).toBeLessThanOrEqual(frame.text.length - 1)
+                expect(frame.compare.patternIndex).toBeGreaterThanOrEqual(0)
+                expect(frame.compare.patternIndex).toBeLessThanOrEqual(frame.pattern.length - 1)
+            }
+        }
+    })
+
     it('keeps BFS queue and visited state consistent in every frame', () => {
         const graph = graphOf(GraphType.undigraph, [10, 20, 30, 42], [[10, 20], [20, 30]])
         const algorithm = new BFS()

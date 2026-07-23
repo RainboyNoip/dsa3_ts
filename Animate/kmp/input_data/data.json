@@ -1,0 +1,17 @@
+[
+    {
+        "name": "经典匹配",
+        "text": "ABABDABACDABABCABAB",
+        "pattern": "ABABCABAB"
+    },
+    {
+        "name": "重复前缀",
+        "text": "AAAAABAAABA",
+        "pattern": "AAABA"
+    },
+    {
+        "name": "未找到",
+        "text": "HELLO WORLD",
+        "pattern": "KMP"
+    }
+]
