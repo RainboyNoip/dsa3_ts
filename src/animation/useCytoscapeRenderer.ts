@@ -24,6 +24,28 @@ export const animationClasses = [
     'cycle',
 ] as const
 
+export type AnimationVisualState = {
+    class: readonly string[]
+    color?: string
+    dfn?: number
+}
+
+export function changedAnimationStateKeys(
+    previous: ReadonlyMap<string, AnimationVisualState>,
+    next: ReadonlyMap<string, AnimationVisualState>,
+): string[] {
+    const keys = new Set([...previous.keys(), ...next.keys()])
+    return [...keys].filter((key) => {
+        const before = previous.get(key)
+        const after = next.get(key)
+        if (before === undefined || after === undefined) return true
+        return before.color !== after.color
+            || before.dfn !== after.dfn
+            || before.class.length !== after.class.length
+            || before.class.some((className, index) => className !== after.class[index])
+    })
+}
+
 export function useCytoscapeRenderer(
     container: Ref<HTMLElement | null>,
     createCytoscape: CreateCytoscape,
@@ -33,6 +55,8 @@ export function useCytoscapeRenderer(
     let currentEdges: EdgeDefinition[] = []
     let currentFrame: CytoscapeFrame | null = null
     let resizeObserver: ResizeObserver | null = null
+    let previousNodeStates = new Map<string, AnimationVisualState>()
+    let previousEdgeStates = new Map<string, AnimationVisualState>()
 
     const destroy = (): void => {
         resizeObserver?.disconnect()
@@ -41,6 +65,8 @@ export function useCytoscapeRenderer(
         instance.value?.stop()
         instance.value?.destroy()
         instance.value = null
+        previousNodeStates = new Map()
+        previousEdgeStates = new Map()
     }
 
     const mount = (nodes: NodeDefinition[], edges: EdgeDefinition[]): Core | null => {
@@ -70,21 +96,46 @@ export function useCytoscapeRenderer(
         const cy = instance.value
         if (!cy) return
 
-        cy.batch(() => {
-            clearClasses()
-            if (!frame) return
+        const nextNodeStates = new Map<string, AnimationVisualState>()
+        const nextEdgeStates = new Map<string, AnimationVisualState>()
+        for (const node of frame?.nodes_state || []) {
+            nextNodeStates.set(String(node.id), {
+                class: [...node.class],
+                color: node.color,
+            })
+        }
+        for (const edge of frame?.edges_state || []) {
+            nextEdgeStates.set(`${edge.source}\u0000${edge.target}`, {
+                class: [...edge.class],
+                dfn: edge.dfn,
+            })
+        }
 
-            for (const edge of frame.edges_state) {
-                const elements = cy.edges(`[source = "${edge.source}"][target = "${edge.target}"]`)
-                elements.addClass(edge.class.join(' '))
-                if (edge.dfn !== undefined) elements.data('dfn', edge.dfn)
+        cy.batch(() => {
+            for (const key of changedAnimationStateKeys(previousEdgeStates, nextEdgeStates)) {
+                const separator = key.indexOf('\u0000')
+                const source = key.slice(0, separator)
+                const target = key.slice(separator + 1)
+                const elements = cy.edges(`[source = "${source}"][target = "${target}"]`)
+                const state = nextEdgeStates.get(key)
+                elements.removeClass(animationClasses.join(' '))
+                elements.removeData('dfn')
+                if (state?.class.length) elements.addClass(state.class.join(' '))
+                if (state?.dfn !== undefined) elements.data('dfn', state.dfn)
             }
-            for (const node of frame.nodes_state) {
-                const elements = cy.nodes(`[id = "${node.id}"]`)
-                elements.addClass(node.class.join(' '))
-                if (node.color !== undefined) elements.data('color', node.color)
+
+            for (const key of changedAnimationStateKeys(previousNodeStates, nextNodeStates)) {
+                const elements = cy.nodes(`[id = "${key}"]`)
+                const state = nextNodeStates.get(key)
+                elements.removeClass(animationClasses.join(' '))
+                elements.removeData('color')
+                if (state?.class.length) elements.addClass(state.class.join(' '))
+                if (state?.color !== undefined) elements.data('color', state.color)
             }
         })
+
+        previousNodeStates = nextNodeStates
+        previousEdgeStates = nextEdgeStates
     }
 
     const relayout = (): void => {
