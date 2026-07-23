@@ -3,7 +3,7 @@ import type { Core, EdgeDefinition, NodeDefinition } from 'cytoscape'
 import type { NodeId } from '../lib/graph_ts'
 
 export type CytoscapeFrame = {
-    edges_state: Array<{ source: NodeId; target: NodeId; class: string[] }>
+    edges_state: Array<{ source: NodeId; target: NodeId; class: string[]; dfn?: number }>
     nodes_state: Array<{ id: NodeId; class: string[]; color?: string }>
 }
 
@@ -42,6 +42,7 @@ export function useCytoscapeRenderer(
         if (classes.size > 0) {
             cy.elements().removeClass([...classes].join(' '))
         }
+        cy.edges().removeData('dfn')
     }
 
     const applyFrame = (frame: CytoscapeFrame | null): void => {
@@ -53,8 +54,9 @@ export function useCytoscapeRenderer(
             if (!frame) return
 
             for (const edge of frame.edges_state) {
-                cy.edges(`[source = "${edge.source}"][target = "${edge.target}"]`)
-                    .addClass(edge.class.join(' '))
+                const elements = cy.edges(`[source = "${edge.source}"][target = "${edge.target}"]`)
+                elements.addClass(edge.class.join(' '))
+                if (edge.dfn !== undefined) elements.data('dfn', edge.dfn)
             }
             for (const node of frame.nodes_state) {
                 const elements = cy.nodes(`[id = "${node.id}"]`)
