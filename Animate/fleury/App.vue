@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
-import { NButton, NButtonGroup, NFlex, NProgress, NSelect } from 'naive-ui'
+import { NFlex, NSelect } from 'naive-ui'
 import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
 import SpliteLayout from '../../src/components/splite_layout_unocss.vue'
 import codeEditor from '@/components/code-editor.vue'
+import AnimationControls from '@/components/animation-controls.vue'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
 import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
@@ -26,12 +26,6 @@ const renderer = useCytoscapeRenderer(cyContainer, initCytoscape)
 const player = useAnimationPlayer()
 const {
     currentFrame,
-    frameCount,
-    progress,
-    isAtStart,
-    isAtEnd,
-    previousFrame,
-    nextFrame,
 } = player
 
 const jumpLine = ref<[number, number]>([-1, -1])
@@ -85,19 +79,7 @@ const getInputData = (): void => {
   <div class="container mx-auto py-2 box-border h-full">
     <SpliteLayout>
       <template #top>
-        <div class="flex justify-center items-center gap-3">
-          <n-button-group>
-            <n-button :disabled="isAtStart" aria-label="上一帧" @click="previousFrame">
-              <Icon icon="fluent:previous-16-regular" width="15" height="15" />
-            </n-button>
-            <n-button ghost :disabled="isAtEnd" aria-label="下一帧" @click="nextFrame">
-              <Icon icon="fluent:next-16-regular" width="15" height="15" />
-            </n-button>
-          </n-button-group>
-          <n-progress type="line" :percentage="progress">
-            {{ currentFrame }}/{{ frameCount }}
-          </n-progress>
-        </div>
+        <AnimationControls :player="player" />
       </template>
 
       <template #left>

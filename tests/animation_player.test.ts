@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useAnimationPlayer } from '../src/animation/useAnimationPlayer'
+
+afterEach(() => {
+    vi.useRealTimers()
+})
 
 describe('useAnimationPlayer', () => {
     it('clamps navigation to the first and last frame', () => {
@@ -38,5 +42,63 @@ describe('useAnimationPlayer', () => {
         expect(player.currentFrame.value).toBe(0)
         player.setFrame(99)
         expect(player.currentFrame.value).toBe(1)
+    })
+
+    it('plays one frame per interval and pauses at the end', () => {
+        vi.useFakeTimers()
+        const player = useAnimationPlayer(3, { intervalMs: 100 })
+
+        player.play()
+        expect(player.isPlaying.value).toBe(true)
+
+        vi.advanceTimersByTime(100)
+        expect(player.currentFrame.value).toBe(1)
+        expect(player.isPlaying.value).toBe(true)
+
+        vi.advanceTimersByTime(200)
+        expect(player.currentFrame.value).toBe(3)
+        expect(player.isAtEnd.value).toBe(true)
+        expect(player.isPlaying.value).toBe(false)
+
+        vi.advanceTimersByTime(500)
+        expect(player.currentFrame.value).toBe(3)
+    })
+
+    it('supports pause, toggle, and restart without leaving a timer running', () => {
+        vi.useFakeTimers()
+        const player = useAnimationPlayer(4, { intervalMs: 100 })
+
+        player.play()
+        vi.advanceTimersByTime(100)
+        player.pause()
+        expect(player.currentFrame.value).toBe(1)
+        expect(player.isPlaying.value).toBe(false)
+
+        vi.advanceTimersByTime(500)
+        expect(player.currentFrame.value).toBe(1)
+
+        player.togglePlay()
+        expect(player.isPlaying.value).toBe(true)
+        vi.advanceTimersByTime(100)
+        expect(player.currentFrame.value).toBe(2)
+
+        player.restart()
+        expect(player.currentFrame.value).toBe(0)
+        expect(player.isPlaying.value).toBe(false)
+        vi.advanceTimersByTime(500)
+        expect(player.currentFrame.value).toBe(0)
+    })
+
+    it('stops playback when the frame count changes', () => {
+        vi.useFakeTimers()
+        const player = useAnimationPlayer(4, { intervalMs: 100 })
+
+        player.play()
+        player.setFrameCount(1)
+
+        expect(player.currentFrame.value).toBe(0)
+        expect(player.isPlaying.value).toBe(false)
+        vi.advanceTimersByTime(500)
+        expect(player.currentFrame.value).toBe(0)
     })
 })
