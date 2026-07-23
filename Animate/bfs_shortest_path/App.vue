@@ -1,146 +1,113 @@
-<script lang="ts">
-import { defineComponent} from 'vue'
-import Splite_layout_unocss from "../../src/components/splite_layout_unocss.vue"
-import {NButton,NButtonGroup,NProgress,NSelect,NFlex} from 'naive-ui'
-import codeEditor from "@/components/code-editor.vue";
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from 'vue'
+import { Icon } from '@iconify/vue'
+import { NButton, NButtonGroup, NFlex, NProgress, NSelect } from 'naive-ui'
+import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
-import { Icon } from '@iconify/vue';
-import {read_raw_code} from '@/lib/read_raw_code'
-import raw_code from './code.cpp?raw'
-import default_graph_data from './input_data/data.json'
-const default_graph_selector_options = default_graph_data.map((item,i) => ({label: item.name, value: i}))
+import SpliteLayout from '../../src/components/splite_layout_unocss.vue'
+import codeEditor from '@/components/code-editor.vue'
+import { read_raw_code } from '@/lib/read_raw_code'
+import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
+import { useCytoscapeRenderer } from '@/animation/useCytoscapeRenderer'
+import rawCode from './code.cpp?raw'
+import defaultGraphData from './input_data/data.json'
+import { BFS_SP } from './bfs_sp'
+import { Graph, GraphType } from '../../src/lib/graph_ts'
+import { initCytoscape } from './cyto'
 
-import {Graph,GraphType} from '../../src/lib/graph_ts'
-import {BFS_SP} from './bfs_sp'
-import {initCytoscape} from './cyto'
-import {Core,NodeDefinition,EdgeDefinition} from 'cytoscape'
+const { code, point_jump_info } = read_raw_code(rawCode)
+const defaultGraphSelectorOptions = defaultGraphData.map((item, index) => ({ label: item.name, value: index }))
 
-const {code ,point_jump_info} = read_raw_code(raw_code)
+const cyContainer = ref<HTMLElement | null>(null)
+const selectedGraph = ref(0)
+const graph = ref(new Graph(GraphType.undigraph))
+const bfsSp = ref(new BFS_SP())
+const renderer = useCytoscapeRenderer(cyContainer, initCytoscape)
+const player = useAnimationPlayer()
+const {
+    currentFrame,
+    frameCount,
+    progress,
+    isAtStart,
+    isAtEnd,
+    previousFrame,
+    nextFrame,
+} = player
 
-var CY:Core = null as any
+const jumpLine = ref<[number, number]>([-1, -1])
+const log = ref('')
 
-export default defineComponent({
-    name:"bfsSpApp",
-    components:{NButton,NButtonGroup,NProgress,NSelect,NFlex,Icon,Splite_layout_unocss,codeEditor},
-    data() {
-        return {
-            default_graph_selector_value: 0 as number,
-            default_graph_selector_options : default_graph_selector_options,
-            code:code,
-            now_frame: 0 as number,
-            cy:null as HTMLElement | null,
-            graph: new Graph(GraphType.undigraph) as Graph,
-            bfsSp: new BFS_SP() as BFS_SP,
-            log:'',
-            jump_line: [-1,-1]
-        }
-    },
-    mounted() {
-        this.cy = this.$refs.cy as HTMLElement
-        console.log('mounted')
-        this.init_graph(default_graph_data[this.default_graph_selector_value].nodes,default_graph_data[this.default_graph_selector_value].edges)
-    },
-    watch: {
-        default_graph_selector_value(new_value,old_value) {
-          if( new_value != old_value) {
-
-            this.init_graph(default_graph_data[new_value].nodes,default_graph_data[new_value].edges)
-            this.now_frame = 0
-          }
-        },
-        now_frame(new_value,old_value) {
-          if( new_value != old_value) {
-            this.remove_cy_all_class();
-            let frame = this.bfsSp.get_frame(new_value)
-            for( let edge of frame.edges_state )
-            {
-              CY.edges(`[source = "${edge.source}"][target = "${edge.target}"]`).addClass(edge.class.join(' '))
-            }
-
-            for( let node of frame.nodes_state ){
-              CY.nodes(`[id = "${node.id}"]`).addClass(node.class.join(' '))
-            }
-            this.jump_line = [...frame.jump]
-            this.log = frame.log
-          }
-        }
-    },
-    methods: {
-
-      remove_cy_all_class() {
-        let allClasses: Set<string> = new Set();
-        CY.elements().forEach(function (element) {
-          element.classes().forEach(function (className) {
-            allClasses.add(className);
-          });
-        });
-        CY.elements().removeClass(Array.from(allClasses).join(' '));
-      },
-        play_pre() {
-          if(this.now_frame > 0) this.now_frame -= 1
-        },
-        play_next() {
-          if( this.now_frame < this.frame_cnt) this.now_frame += 1
-        },
-        init_graph(nodes:NodeDefinition[],edges:EdgeDefinition[]) {
-            if(CY) {
-                CY.destroy()
-            }
-            CY = initCytoscape(this.cy as HTMLElement,nodes,edges)
-
-            this.graph.readFromCytoscape(nodes,edges)
-
-            this.bfsSp.clear();
-            this.bfsSp.set_graph(this.graph as Graph)
-            this.bfsSp.set_pointJumpInfo(point_jump_info)
-            this.bfsSp.run_bfs_sp()
-        },
-        get_input_data() {
-          alert('TODO')
-        }
-    },
-    computed: {
-        frame_cnt() {
-            return this.bfsSp.frame_cnt
-        },
-        queue() {
-            if( this.now_frame <=0 ) return []
-            return this.bfsSp.get_frame(this.now_frame).que
-        },
-        head() {
-            if( this.now_frame <=0 ) return null
-            return this.bfsSp.get_frame(this.now_frame).head
-        }
+const applyFrame = (index: number): void => {
+    if (index <= 0) {
+        renderer.applyFrame(null)
+        jumpLine.value = [-1, -1]
+        log.value = ''
+        return
     }
-})
-</script>
 
+    const frame = bfsSp.value.get_frame(index)
+    renderer.applyFrame(frame)
+    jumpLine.value = [...frame.jump]
+    log.value = frame.log
+}
+
+const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
+    if (!renderer.mount(nodes, edges)) return
+    graph.value.readFromCytoscape(nodes, edges)
+    bfsSp.value.clear()
+    bfsSp.value.set_graph(graph.value as Graph)
+    bfsSp.value.set_pointJumpInfo(point_jump_info)
+    bfsSp.value.run_bfs_sp()
+    player.setFrameCount(bfsSp.value.frame_cnt)
+    player.reset()
+    applyFrame(0)
+}
+
+watch(selectedGraph, (next, previous) => {
+    if (next === previous) return
+    initGraph(defaultGraphData[next].nodes, defaultGraphData[next].edges)
+})
+
+watch(currentFrame, (frame) => applyFrame(frame))
+
+onMounted(() => {
+    const data = defaultGraphData[selectedGraph.value]
+    initGraph(data.nodes, data.edges)
+})
+
+const queue = computed(() => currentFrame.value <= 0 ? [] : bfsSp.value.get_frame(currentFrame.value).que)
+const head = computed(() => currentFrame.value <= 0 ? null : bfsSp.value.get_frame(currentFrame.value).head)
+
+const getInputData = (): void => {
+    alert('TODO')
+}
+</script>
 
 <template>
   <div class="container mx-auto py-2 box-border h-full">
-    <Splite_layout_unocss>
-      <template v-slot:top>
+    <SpliteLayout>
+      <template #top>
         <div class="flex justify-center items-center gap-3">
           <n-button-group>
-            <n-button @click="play_pre">
+            <n-button :disabled="isAtStart" aria-label="上一帧" @click="previousFrame">
               <Icon icon="fluent:previous-16-regular" width="15" height="15" />
             </n-button>
-            <n-button ghost @click="play_next">
+            <n-button ghost :disabled="isAtEnd" aria-label="下一帧" @click="nextFrame">
               <Icon icon="fluent:next-16-regular" width="15" height="15" />
             </n-button>
           </n-button-group>
-          <n-progress type="line" :percentage="now_frame/(frame_cnt || 1) * 100" >
-            {{ now_frame}}/ {{ frame_cnt }}
+          <n-progress type="line" :percentage="progress">
+            {{ currentFrame }}/{{ frameCount }}
           </n-progress>
         </div>
       </template>
 
-      <template v-slot:left>
+      <template #left>
         <div class="flex flex-col h-full">
           <div class="card-1 p-2 grow-0">
             <n-flex>
-              <n-select v-model:value="default_graph_selector_value" :options="default_graph_selector_options" style="width: 200px;"></n-select>
-              <n-button @click="get_input_data">输入数据</n-button>
+              <n-select v-model:value="selectedGraph" :options="defaultGraphSelectorOptions" style="width: 200px" />
+              <n-button @click="getInputData">输入数据</n-button>
             </n-flex>
             <div class="mt-2">
               <span class="me-2">队头:</span>
@@ -154,26 +121,24 @@ export default defineComponent({
                 {{ item[0] }}({{ item[1] }})
               </span>
             </div>
-            <div class="m-1 mt-3">
-              {{ log }}
-            </div>
+            <div class="m-1 mt-3">{{ log }}</div>
           </div>
-          <div id="cy" class="grow" style="" ref="cy"></div>
+          <div id="cy" ref="cyContainer" class="grow"></div>
         </div>
       </template>
 
-      <template v-slot:right>
-        <code-editor :code="code" :hline_start="jump_line[0]" :hline_end="jump_line[1]"></code-editor>
+      <template #right>
+        <code-editor :code="code" :hline_start="jumpLine[0]" :hline_end="jumpLine[1]" />
       </template>
-    </Splite_layout_unocss>
+    </SpliteLayout>
   </div>
 </template>
 
 <style>
-html,body {
+html, body {
   padding: 0;
   margin: 0;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
 }
 </style>
