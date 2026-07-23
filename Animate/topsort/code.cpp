@@ -7,7 +7,7 @@ const int maxn = 1e6+5;
 const int maxe = 1e6+5;
 
 int n,m;
-int int_deg[maxn]; //每个点的入度 
+int in_deg[maxn]; //每个点的入度 
 
 //图的存储结构,linkList
 struct linkList {
@@ -68,7 +68,6 @@ struct myqueue{
 };
 
 
-int in_deg[maxn]; //每个点的入度
 
 //存topsort的结果
 int ta[maxn];
@@ -107,7 +106,7 @@ void init() {
     for(int i =1;i<=m;i++) {
         int u,v;
         cin >> u >> v;
-        int_deg[v]++;
+        in_deg[v]++;
         e.add(u,v); //有向图存图,只加一次
     }
 }
