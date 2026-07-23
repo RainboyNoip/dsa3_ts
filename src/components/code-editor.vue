@@ -1,99 +1,90 @@
-<!-- 对vue3-ace-editor进行封装 
-
-实现功能:
-
-1. 跳转到指定行
-2. 高亮指定行
-3. 显示代码
--->
+<!-- 只读 C/C++ 代码面板，并与动画帧的代码行范围联动。 -->
 <template>
-    <v-ace-editor ref="aceRef" v-model:value="rawCode" lang="json" theme="chrome" style="height: 100%; min-height: 800px;" />
+  <v-ace-editor
+    ref="aceRef"
+    class="code-editor"
+    :value="code"
+    lang="c_cpp"
+    theme="chrome"
+    :readonly="true"
+    :options="editorOptions"
+  />
 </template>
 
-<script lang="ts">
-import { VAceEditor } from 'vue3-ace-editor';
-import 'ace-builds/src-noconflict/mode-json'; // Load the language definition file used below
-import 'ace-builds/src-noconflict/theme-chrome'; // Load the theme definition file used below
-export default {
-  components: { VAceEditor },
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { Range } from 'ace-builds'
+import type { Ace } from 'ace-builds'
+import { VAceEditor } from 'vue3-ace-editor'
+import type { VAceEditorInstance } from 'vue3-ace-editor/types'
+import 'ace-builds/src-noconflict/mode-c_cpp'
+import 'ace-builds/src-noconflict/theme-chrome'
 
-  data() {
-    return {
-      fakeCode:'123',
-      ace:null, // ace实例
-      markId:null, // 高亮标记 id
-    }
-  },
-  mounted() {
-    //@ts-ignore
-    this.ace = this.$refs.aceRef.getAceInstance()
-    //@ts-ignore
-    this.ace.setReadOnly(true)
-  },
-  props: {
-    code: {
-        type: String,
-        default:''
-    },
-    hline_start:{
-      type: Number,
-      default:-1
-    },
-    hline_end:{
-      type: Number,
-      default:-1
-    }
-  },
-  computed: {
-    hline(){
-      // console.log(this.hline_start,this.hline_end)
-      if( this.hline_start != -1 && this.hline_end != -1 && this.hline_end >=this.hline_start)
-      {
-        return [this.hline_start,this.hline_end]
-      }
-      return [-1,-1]
-    },
-    rawCode :{
-      get() {
-        return this.code
-      },
-      set(val:string) {
-        this.$emit('update:code', val)
-      }
-    }
-  },
-  watch: {
-    hline(newVal/*,oldVal*/){
-      // console.log(newVal)
-      let [hs,he] = newVal
-      if(hs >=0) {
-        this.highlightLine(hs,he)
-        this.gotoline(hs)
-      }
-    }
-  },
-  methods: {
-    highlightLine(line_start:number,line_end:number){ 
-      //@ts-ignore
-      let Range = ace.require('ace/range').Range;
-      let range = new Range(line_start, 0, line_end, 1); // 高亮范围（行，列开始，行，列结束）  
-      //@ts-ignore
-      if(this.markId) this.ace.getSession().removeMarker(this.markId)
-      //@ts-ignore
-      this.markId = this.ace.getSession().addMarker(range, "highlightLine", "fullLine", true);
-    },
-    gotoline(line:number) {
-      // @ts-ignore
-      this.ace.scrollToLine(line, true, true);  
-    }
-  }
+const props = withDefaults(defineProps<{
+  code: string
+  hline_start?: number
+  hline_end?: number
+}>(), {
+  hline_start: -1,
+  hline_end: -1,
+})
+
+const aceRef = ref<VAceEditorInstance | null>(null)
+const markerId = ref<number | null>(null)
+const editorOptions: Partial<Ace.EditorOptions> = {
+  showPrintMargin: false,
+  highlightActiveLine: false,
+  tabSize: 4,
+  useWorker: false,
 }
+
+const getEditor = (): Ace.Editor | null => aceRef.value?.getAceInstance() || null
+
+const clearMarker = (): void => {
+  const editor = getEditor()
+  if (editor && markerId.value !== null) {
+    editor.getSession().removeMarker(markerId.value)
+  }
+  markerId.value = null
+}
+
+const syncHighlight = (): void => {
+  const editor = getEditor()
+  if (!editor) return
+
+  clearMarker()
+  const { hline_start: start, hline_end: end } = props
+  if (start < 0 || end < start) return
+
+  const range = new Range(start, 0, end, 1)
+  markerId.value = editor.getSession().addMarker(range, 'highlightLine', 'fullLine', true)
+  editor.scrollToLine(start, true, true, () => undefined)
+}
+
+onMounted(() => {
+  getEditor()?.setReadOnly(true)
+  syncHighlight()
+})
+
+watch(
+  () => [props.hline_start, props.hline_end],
+  () => syncHighlight(),
+)
+
+onBeforeUnmount(() => clearMarker())
 </script>
 
-<style>
+<style scoped>
+.code-editor {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
 .highlightLine {
-    position: absolute;
-    z-index: 20;
-    background-color: rgba(17, 199, 8, 0.452);
+  position: absolute;
+  z-index: 20;
+  background-color: rgb(22 163 74 / 18%);
 }
 </style>

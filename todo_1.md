@@ -155,10 +155,10 @@ status: in-progress
 
 相关文件：`src/components/code-editor.vue`
 
-- [ ] 将 Ace 模式从 JSON 改为 C/C++。
-- [ ] 删除固定的 `min-height: 800px`，让编辑器跟随工作区尺寸。
-- [ ] 使用明确的 Ace 类型或封装，移除 `@ts-ignore` 和对全局 `ace` 的隐式依赖。
-- [ ] 高亮范围变化时正确移除旧 marker；回到第 0 帧时清除高亮。
+- [x] 将 Ace 模式从 JSON 改为 C/C++。
+- [x] 删除固定的 `min-height: 800px`，让编辑器跟随工作区尺寸。
+- [x] 使用明确的 Ace 类型或封装，移除 `@ts-ignore` 和对全局 `ace` 的隐式依赖。
+- [x] 高亮范围变化时正确移除旧 marker；回到第 0 帧时清除高亮。
 - [ ] 确认代码行号与 `read_raw_code()` 解析出的跳转范围保持一致。
 
 ### 输入数据
