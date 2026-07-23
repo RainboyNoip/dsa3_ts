@@ -23,7 +23,7 @@ const panels: Array<{ id: WorkspacePanel; label: string }> = [
     { id: 'state', label: '状态' },
 ]
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     title: string
     player: AnimationPlayer
     graphOptions: GraphOption[]
@@ -31,7 +31,10 @@ const props = defineProps<{
     graphType: GraphType
     sampleInput: string
     inputRules?: GraphInputRules
-}>()
+    showDataToolbar?: boolean
+}>(), {
+    showDataToolbar: true,
+})
 
 const emit = defineEmits<{
     'update:selectedGraph': [value: number]
@@ -191,7 +194,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
         :aria-labelledby="isMobile ? 'workspace-tab-state' : undefined"
         :tabindex="isMobile ? 0 : undefined"
       >
-        <div class="workspace-toolbar">
+        <div v-if="showDataToolbar" class="workspace-toolbar">
           <select v-model.number="selectedGraphValue" class="workspace-select" aria-label="选择图数据">
             <option v-for="option in graphOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -254,6 +257,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
     </main>
 
     <AnimationInputDialog
+      v-if="showDataToolbar"
       v-model:show="inputDialogOpen"
       :sample="sampleInput"
       :graph-type="graphType"

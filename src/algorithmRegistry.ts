@@ -45,6 +45,11 @@ const icons = {
     width: 24,
     height: 24,
   },
+  string: {
+    body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2M9 8l3 4-3 4m6-8h.01M15 16h.01"/></g>',
+    width: 24,
+    height: 24,
+  },
 } satisfies Record<string, LocalIconDefinition>
 
 export const catalogActionIcon: LocalIconDefinition = {
@@ -144,6 +149,19 @@ export const algorithmRegistry = [
     accent: '#ca8a04',
     tint: '#fefce8',
     icon: icons.scissors,
+  },
+  {
+    id: 'kmp',
+    buildName: 'kmp',
+    entry: 'Animate/kmp/index.html',
+    sourceFile: 'kmp.ts',
+    title: 'KMP 字符串匹配',
+    eyebrow: 'STRING MATCHING',
+    description: '利用 LPS 前缀表跳过无效比较，高效定位模式串。',
+    tags: ['字符串', '前缀表'],
+    accent: '#176b5b',
+    tint: '#edf7f4',
+    icon: icons.string,
   },
 ] as const satisfies readonly AlgorithmDefinition[]
 

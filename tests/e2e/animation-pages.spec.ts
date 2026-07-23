@@ -8,6 +8,7 @@ const algorithmPaths = [
     '/Animate/dfsscc/',
     '/Animate/tarjan_cut/',
     '/Animate/fleury/',
+    '/Animate/kmp/',
 ]
 
 type Diagnostics = {
@@ -55,8 +56,8 @@ test.describe('homepage', () => {
         await page.goto('/')
         await page.locator('.algorithm-card').first().waitFor()
 
-        await expect(page.locator('.algorithm-card')).toHaveCount(7)
-        await expect(page.locator('.library-status')).toContainText('7 个演示')
+        await expect(page.locator('.algorithm-card')).toHaveCount(8)
+        await expect(page.locator('.library-status')).toContainText('8 个演示')
         await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'light')
         await expectNoHorizontalOverflow(page)
 
@@ -71,7 +72,7 @@ test.describe('homepage', () => {
         await page.setViewportSize({ width: 1440, height: 900 })
         await page.goto('/')
         await expect(page.getByRole('heading', { name: '算法可视化实验室' })).toBeVisible()
-        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(7)
+        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(8)
         await expect(page).toHaveScreenshot('homepage-desktop.png', {
             animations: 'disabled',
             caret: 'hide',
@@ -122,6 +123,27 @@ test.describe('animation pages', () => {
         await expect(page.getByRole('button', { name: '应用数据' })).toBeEnabled()
     })
 
+    test('runs KMP input through prefix-table and match frames', async ({ page }) => {
+        const diagnostics = observeDiagnostics(page)
+        await page.goto('/Animate/kmp/')
+        await page.getByRole('button', { name: '输入字符串' }).click()
+        await page.getByLabel('主串').fill('ABC ABCDAB ABCDABCDABDE')
+        await page.getByLabel('模式串').fill('ABCDABD')
+        await page.getByRole('button', { name: '应用字符串' }).click()
+
+        await expect(page.getByText('构建 LPS')).toBeVisible()
+        const next = page.getByRole('button', { name: '下一帧' })
+        await expect(next).toBeEnabled()
+        let frames = 0
+        while (await next.isEnabled() && frames < 200) {
+            await next.click()
+            frames += 1
+        }
+        await expect(page.getByText('匹配成功', { exact: true })).toBeVisible()
+        expect(frames).toBeGreaterThan(0)
+        expectNoDiagnostics(diagnostics)
+    })
+
     test('offloads large graph animation generation to a Web Worker', async ({ page }) => {
         const diagnostics = observeDiagnostics(page)
         const workerUrls: string[] = []
@@ -145,15 +167,19 @@ test.describe('animation pages', () => {
             const diagnostics = observeDiagnostics(page)
             await page.goto(path)
             await page.locator('.workspace-header').waitFor()
-            await expect(page.locator('#cy')).toBeVisible()
+            if (path === '/Animate/kmp/') await expect(page.locator('.kmp-graph')).toBeVisible()
+            else await expect(page.locator('#cy')).toBeVisible()
             await expect(page.getByRole('button', { name: '上一帧' })).toBeDisabled()
             await expect(page.getByRole('button', { name: '下一帧' })).toBeEnabled()
             await expect(page.getByRole('button', { name: '重新开始' })).toBeEnabled()
             await expect(page.locator('.workspace-resizer')).toBeVisible()
             await expectNoHorizontalOverflow(page)
 
-            for (const label of ['返回首页', '上一帧', '播放', '下一帧', '重新开始', '确认跳转', '重新布局']) {
+            for (const label of ['返回首页', '上一帧', '播放', '下一帧', '重新开始', '确认跳转']) {
                 await expect(page.getByRole('button', { name: label }).locator('svg')).toBeVisible()
+            }
+            if (path !== '/Animate/kmp/') {
+                await expect(page.getByRole('button', { name: '重新布局' }).locator('svg')).toBeVisible()
             }
 
             const next = page.getByRole('button', { name: '下一帧' })
