@@ -213,7 +213,8 @@ status: in-progress
 ### Milestone 2：统一动画工作区
 
 - [ ] 完成公共帧类型、播放器、Cytoscape renderer 和工作区组件。
-- [ ] 先迁移 BFS 作为模板，再逐个迁移其余 6 个算法。
+- [x] 先迁移 BFS 和 DFS 作为公共架构模板。
+- [ ] 继续迁移剩余 5 个算法入口。
 - [ ] 删除各模块重复的播放和渲染实现。
 
 ### Milestone 3：可用的跨端体验
