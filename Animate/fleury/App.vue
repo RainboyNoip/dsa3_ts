@@ -86,6 +86,7 @@ const applyInputGraph = (inputGraph: Graph): void => {
     :sample-input="sampleInput"
     :input-rules="inputRules"
     @input-data="applyInputGraph"
+    @relayout="renderer.relayout"
   >
     <template #state>
       <div class="m-1 mt-3">{{ log }}</div>

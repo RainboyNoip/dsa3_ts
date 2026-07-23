@@ -18,6 +18,9 @@ export function useCytoscapeRenderer(
     createCytoscape: CreateCytoscape,
 ) {
     const instance = shallowRef<Core | null>(null)
+    let currentNodes: NodeDefinition[] = []
+    let currentEdges: EdgeDefinition[] = []
+    let currentFrame: CytoscapeFrame | null = null
 
     const destroy = (): void => {
         instance.value?.destroy()
@@ -26,6 +29,9 @@ export function useCytoscapeRenderer(
 
     const mount = (nodes: NodeDefinition[], edges: EdgeDefinition[]): Core | null => {
         destroy()
+        currentNodes = nodes
+        currentEdges = edges
+        currentFrame = null
         if (!container.value) return null
         instance.value = createCytoscape(container.value, nodes, edges)
         return instance.value
@@ -46,6 +52,7 @@ export function useCytoscapeRenderer(
     }
 
     const applyFrame = (frame: CytoscapeFrame | null): void => {
+        currentFrame = frame
         const cy = instance.value
         if (!cy) return
 
@@ -66,6 +73,12 @@ export function useCytoscapeRenderer(
         })
     }
 
+    const relayout = (): void => {
+        if (!container.value || currentNodes.length === 0) return
+        const frame = currentFrame
+        if (mount(currentNodes, currentEdges)) applyFrame(frame)
+    }
+
     onBeforeUnmount(destroy)
 
     return {
@@ -73,6 +86,7 @@ export function useCytoscapeRenderer(
         mount,
         applyFrame,
         clearClasses,
+        relayout,
         destroy,
     }
 }

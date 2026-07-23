@@ -28,6 +28,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     'update:selectedGraph': [value: number]
     'input-data': [graph: Graph]
+    relayout: []
 }>()
 
 const selectedGraphValue = computed({
@@ -73,6 +74,15 @@ const goHome = (): void => {
                 style="width: min(12.5rem, 100%)"
               />
               <n-button @click="inputDialogOpen = true">输入数据</n-button>
+              <n-button
+                quaternary
+                circle
+                aria-label="重新布局"
+                title="重新布局"
+                @click="emit('relayout')"
+              >
+                <Icon icon="fluent:arrow-clockwise-16-regular" width="16" height="16" />
+              </n-button>
             </div>
             <slot name="state" />
           </div>

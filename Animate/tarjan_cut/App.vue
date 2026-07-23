@@ -91,6 +91,7 @@ const applyInputGraph = (inputGraph: Graph): void => {
     :sample-input="sampleInput"
     :input-rules="inputRules"
     @input-data="applyInputGraph"
+    @relayout="renderer.relayout"
   >
     <template #state>
       <div class="mt-2 overflow-auto">
