@@ -86,10 +86,10 @@ tests/
 
 ## 部署
 
-生产构建输出到 `dist/`。`deploy.sh` 会先执行一次 `bun run build`，成功后将 `dist/` 同步到脚本中配置的远程目录：
+生产构建输出到 `dist/`。`deploy.sh` 会先执行一次 `bun run build`，成功后将 `dist/` 同步到 `DEPLOY_TARGET` 指定的 rsync 目标：
 
 ```bash
-./deploy.sh
+DEPLOY_TARGET='user@example.com:/var/www/dsa3/' ./deploy.sh
 ```
 
-运行前需要配置脚本使用的 SSH 主机别名并确认远程目录。同步命令包含 `rsync --delete`，远端中不属于当前 `dist/` 的文件会被删除。
+运行前需要确认 SSH 连接和远程目录。脚本未设置 `DEPLOY_TARGET` 时会立即退出；构建失败时不会运行同步。同步命令包含 `rsync --delete`，远端中不属于当前 `dist/` 的文件会被删除。

@@ -30,4 +30,3 @@ old_dsa/
 
 # 本地配置（不提交）
 AGENTS.md
-deploy.sh
