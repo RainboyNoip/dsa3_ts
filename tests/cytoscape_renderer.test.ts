@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
     animationClasses,
     changedAnimationStateKeys,
+    mergeAnimationVisualState,
     type AnimationVisualState,
 } from '../src/animation/useCytoscapeRenderer'
 
@@ -39,5 +40,14 @@ describe('Cytoscape animation state diff', () => {
         ])
 
         expect(changedAnimationStateKeys(previous, next)).toEqual(['changed', 'removed', 'added'])
+    })
+
+    it('preserves all classes when a frame lists an element more than once', () => {
+        const merged = mergeAnimationVisualState(
+            { class: ['now_vis'], color: '#123456' },
+            { class: ['highlight'], color: '#abcdef' },
+        )
+
+        expect(merged).toEqual({ class: ['now_vis', 'highlight'], color: '#abcdef' })
     })
 })

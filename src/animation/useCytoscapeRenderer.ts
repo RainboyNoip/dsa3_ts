@@ -30,6 +30,17 @@ export type AnimationVisualState = {
     dfn?: number
 }
 
+export function mergeAnimationVisualState(
+    previous: AnimationVisualState | undefined,
+    next: AnimationVisualState,
+): AnimationVisualState {
+    return {
+        class: [...new Set([...(previous?.class || []), ...next.class])],
+        color: next.color ?? previous?.color,
+        dfn: next.dfn ?? previous?.dfn,
+    }
+}
+
 export function changedAnimationStateKeys(
     previous: ReadonlyMap<string, AnimationVisualState>,
     next: ReadonlyMap<string, AnimationVisualState>,
@@ -99,16 +110,18 @@ export function useCytoscapeRenderer(
         const nextNodeStates = new Map<string, AnimationVisualState>()
         const nextEdgeStates = new Map<string, AnimationVisualState>()
         for (const node of frame?.nodes_state || []) {
-            nextNodeStates.set(String(node.id), {
+            const key = String(node.id)
+            nextNodeStates.set(key, mergeAnimationVisualState(nextNodeStates.get(key), {
                 class: [...node.class],
                 color: node.color,
-            })
+            }))
         }
         for (const edge of frame?.edges_state || []) {
-            nextEdgeStates.set(`${edge.source}\u0000${edge.target}`, {
+            const key = `${edge.source}\u0000${edge.target}`
+            nextEdgeStates.set(key, mergeAnimationVisualState(nextEdgeStates.get(key), {
                 class: [...edge.class],
                 dfn: edge.dfn,
-            })
+            }))
         }
 
         cy.batch(() => {
