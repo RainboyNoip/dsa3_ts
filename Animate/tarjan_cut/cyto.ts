@@ -11,7 +11,7 @@ export function initCytoscape(domId: HTMLElement , nodes: NodeDefinition[], edge
         },
         layout: {
             name:'cose',
-            animate: true,
+            animate: false,
             nodeOverlap: 20,
             refresh: 20,
             fit: true,

@@ -13,7 +13,7 @@ export function initCytoscape(domId: HTMLElement , nodes: NodeDefinition[], edge
             name:'cose',
             // gravity: 0.1,
             // name:'grid',
-            animate: true,
+            animate: false,
             // idealEdgeLength: 100, // 理想边长，增大这个值会让节点间距更大  
             nodeOverlap: 20, // 节点重叠程度  
             refresh: 20, // 布局刷新率  

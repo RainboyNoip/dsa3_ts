@@ -23,6 +23,8 @@ export function useCytoscapeRenderer(
     const destroy = (): void => {
         resizeObserver?.disconnect()
         resizeObserver = null
+        instance.value?.elements().stop(true)
+        instance.value?.stop()
         instance.value?.destroy()
         instance.value = null
     }

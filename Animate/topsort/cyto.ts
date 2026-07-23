@@ -17,7 +17,7 @@ export function initCytoscape(domId: HTMLElement , nodes: NodeDefinition[], edge
             rankDir:'TB',
             fit:true,
             acyclicer: 'greedy', // If set to 'greedy'
-            animate: true,
+            animate: false,
         },
         // layout: {
         //     // name: 'dagre',
