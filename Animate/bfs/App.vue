@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { NButton, NButtonGroup, NFlex, NProgress, NSelect } from 'naive-ui'
-import type { Core, EdgeDefinition, NodeDefinition } from 'cytoscape'
+import type { EdgeDefinition, NodeDefinition } from 'cytoscape'
 
 import SpliteLayout from '../../src/components/splite_layout_unocss.vue'
 import codeEditor from '@/components/code-editor.vue'
@@ -13,6 +13,7 @@ import defaultGraphData from './input_data/data.json'
 import { BFS } from './bfs'
 import { Graph, GraphType } from '../../src/lib/graph_ts'
 import { initCytoscape } from './cyto'
+import { useCytoscapeRenderer } from '../../src/animation/useCytoscapeRenderer'
 
 const { code, point_jump_info } = read_raw_code(rawCode)
 const defaultGraphSelectorOptions = defaultGraphData.map((item, index) => ({ label: item.name, value: index }))
@@ -21,7 +22,7 @@ const cyContainer = ref<HTMLElement | null>(null)
 const selectedGraph = ref(0)
 const graph = ref(new Graph(GraphType.undigraph))
 const bfs = ref(new BFS())
-let cytoscapeInstance: Core | null = null
+const renderer = useCytoscapeRenderer(cyContainer, initCytoscape)
 
 const player = useAnimationPlayer()
 const {
@@ -37,42 +38,22 @@ const {
 const log = ref('')
 const jumpLine = ref<[number, number]>([-1, -1])
 
-const removeCytoscapeClasses = (): void => {
-    if (!cytoscapeInstance) return
-    const classes = new Set<string>()
-    cytoscapeInstance.elements().forEach((element) => {
-        element.classes().forEach((className) => classes.add(className))
-    })
-    if (classes.size > 0) {
-        cytoscapeInstance.elements().removeClass([...classes].join(' '))
-    }
-}
-
 const applyFrame = (index: number): void => {
-    if (!cytoscapeInstance) return
-    removeCytoscapeClasses()
     if (index <= 0) {
+        renderer.applyFrame(null)
         jumpLine.value = [-1, -1]
         log.value = ''
         return
     }
 
     const frame = bfs.value.get_frame(index)
-    for (const edge of frame.edges_state) {
-        cytoscapeInstance.edges(`[source = "${edge.source}"][target = "${edge.target}"]`)
-            .addClass(edge.class.join(' '))
-    }
-    for (const node of frame.nodes_state) {
-        cytoscapeInstance.nodes(`[id = "${node.id}"]`).addClass(node.class.join(' '))
-    }
+    renderer.applyFrame(frame)
     jumpLine.value = [...frame.jump]
     log.value = frame.log
 }
 
 const initGraph = (nodes: NodeDefinition[], edges: EdgeDefinition[]): void => {
-    cytoscapeInstance?.destroy()
-    if (!cyContainer.value) return
-    cytoscapeInstance = initCytoscape(cyContainer.value, nodes, edges)
+    if (!renderer.mount(nodes, edges)) return
 
     graph.value.readFromCytoscape(nodes, edges)
     bfs.value.clear()
@@ -94,11 +75,6 @@ watch(currentFrame, (frame) => applyFrame(frame))
 onMounted(() => {
     const data = defaultGraphData[selectedGraph.value]
     initGraph(data.nodes, data.edges)
-})
-
-onBeforeUnmount(() => {
-    cytoscapeInstance?.destroy()
-    cytoscapeInstance = null
 })
 
 const queue = computed(() => currentFrame.value <= 0 ? [] : bfs.value.get_frame(currentFrame.value).que)
