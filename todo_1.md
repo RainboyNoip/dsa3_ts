@@ -15,9 +15,9 @@ status: in-progress
 
 ## 总体验收目标
 
-- [ ] 7 个算法都有可重复运行的正确性测试。
-- [ ] 任何无效图、环、非连通图或不存在的起点都有明确结果，不静默失败或直接抛出未处理异常。
-- [ ] 7 个动画页共用同一套播放控制、布局、Cytoscape 渲染和代码联动逻辑。
+- [x] 7 个算法都有可重复运行的正确性测试。
+- [x] 任何无效图、环、非连通图或不存在的起点都有明确结果，不静默失败或直接抛出未处理异常。
+- [x] 7 个动画页共用同一套播放控制、布局、Cytoscape 渲染和代码联动逻辑。
 - [ ] 桌面端和 390px 移动端都能完整使用图、状态面板与代码面板。
 - [ ] 首页、动画入口、构建配置和算法元数据由单一配置源生成或校验。
 - [ ] 生产构建无类型错误，主要页面无控制台错误、404 和明显布局溢出。
@@ -58,7 +58,7 @@ status: in-progress
 - [x] 修复 `graph_text_data()`，输出真实节点数、边数和边列表。
 - [x] 加强 `readFromString()`：支持多个空格、校验数字、节点范围、边数、自环和重复边，并用返回值代替 `alert()`。
 - [x] 修复随机图生成器：当 `numEdges < numNodes - 1` 时明确报错，不得返回超过请求数量的边。
-- [ ] 明确节点 ID 策略：要么强制使用连续的 `1..n`，要么将算法全部改为遍历真实节点 ID。
+- [x] 统一采用真实节点 ID：算法遍历图中的实际节点集合，不再依赖连续的 `1..n` 或固定起点 `1`。
 - [x] 增加 Graph 的增删改查、解析、导出和随机图边界测试。
 
 ### DFS、BFS、Tarjan 与 SCC
@@ -109,9 +109,9 @@ status: in-progress
 - [x] 创建 `useAnimationPlayer()`，统一当前帧、上一帧、下一帧、跳转和边界禁用状态。
 - [ ] 在播放器中补充自动播放、暂停和重新开始，并迁移到所有动画页。
 - [x] 创建 `useCytoscapeRenderer()`，管理初始化、销毁、批量更新和帧状态应用。
-- [ ] 用 `onBeforeUnmount()` 销毁 Cytoscape 实例，移除模块级全局 `var CY`。
+- [x] 用 `onBeforeUnmount()` 销毁 Cytoscape 实例，移除模块级全局 `var CY`。
 - [ ] 将算法特有的队列、栈、dfn/low 和结果视图改成具名 slot 或配置化状态面板。
-- [ ] 统一 Options API 与 Composition API，优先采用 `<script setup lang="ts">`。
+- [x] 统一 Options API 与 Composition API，7 个动画入口均采用 `<script setup lang="ts">`。
 
 ### 单一算法注册表
 
@@ -213,9 +213,8 @@ status: in-progress
 ### Milestone 2：统一动画工作区
 
 - [ ] 完成公共帧类型、播放器、Cytoscape renderer 和工作区组件。
-- [x] 先迁移 BFS、DFS、BFS 最短路、拓扑排序、SCC 和 Tarjan 作为公共架构模板。
-- [ ] 继续迁移剩余 1 个算法入口。
-- [ ] 删除各模块重复的播放和渲染实现。
+- [x] 7 个算法入口（BFS、DFS、BFS 最短路、拓扑排序、SCC、Tarjan、Fleury）均已迁移到公共播放器和 renderer。
+- [x] 删除各模块重复的播放和渲染实现。
 
 ### Milestone 3：可用的跨端体验
 
