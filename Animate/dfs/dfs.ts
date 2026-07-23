@@ -8,6 +8,7 @@ export type DFSFrame = AnimationFrame & {
 }
 
 export type DFSResult = AnimationResult<'complete' | 'empty' | 'invalid_start', {
+    scope: 'reachable_component'
     start: NodeId | null
     order: NodeId[]
 }>
@@ -50,7 +51,7 @@ export class DFS {
         this.visited.clear()
         const startId = start ?? this.graph.getFirstVertex() ?? null
         if (startId === null) {
-            this.result = { status: 'empty', start: null, order: [] }
+            this.result = { status: 'empty', scope: 'reachable_component', start: null, order: [] }
             this.animation.push({ ...emptyFrame(), log: '图为空，没有可遍历的节点' })
             return this.result
         }
@@ -58,6 +59,7 @@ export class DFS {
             const error = `起点 ${startId} 不存在`
             this.result = {
                 status: 'invalid_start',
+                scope: 'reachable_component',
                 start: startId,
                 order: [],
                 error,
@@ -67,7 +69,12 @@ export class DFS {
         }
 
         this.dfs(startId, null)
-        this.result = { status: 'complete', start: startId, order: [...this.dfn] }
+        this.result = {
+            status: 'complete',
+            scope: 'reachable_component',
+            start: startId,
+            order: [...this.dfn],
+        }
         return this.result
     }
 

@@ -88,7 +88,7 @@ const algorithmMeta: Record<string, AlgorithmMeta> = {
   bfs: {
     title: 'BFS 遍历',
     eyebrow: 'BREADTH FIRST SEARCH',
-    description: '按层逐级遍历图中所有可达的节点。',
+    description: '从起点按层访问其所在的可达分量。',
     tags: ['无向图', '队列'],
     accent: '#7c3aed',
     tint: '#f5f3ff',
@@ -106,7 +106,7 @@ const algorithmMeta: Record<string, AlgorithmMeta> = {
   dfs: {
     title: 'DFS 遍历',
     eyebrow: 'DEPTH FIRST SEARCH',
-    description: '沿路径深入探索图的每个分支。',
+    description: '从起点沿路径深入探索其所在的可达分量。',
     tags: ['无向图', '递归'],
     accent: '#db2777',
     tint: '#fdf2f8',

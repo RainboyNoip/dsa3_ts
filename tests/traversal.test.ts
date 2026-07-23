@@ -18,7 +18,12 @@ describe('BFS', () => {
 
         const result = bfs.run_bfs()
 
-        expect(result).toEqual({ status: 'complete', start: 10, order: [10, 20] })
+        expect(result).toEqual({
+            status: 'complete',
+            scope: 'reachable_component',
+            start: 10,
+            order: [10, 20],
+        })
         expect(bfs.get_frame(bfs.frame_cnt).visited).toEqual([10, 20])
     })
 
@@ -28,6 +33,7 @@ describe('BFS', () => {
 
         expect(bfs.run_bfs(99)).toEqual({
             status: 'invalid_start',
+            scope: 'reachable_component',
             start: 99,
             order: [],
             error: '起点 99 不存在',
@@ -53,16 +59,26 @@ describe('BFS shortest path', () => {
 describe('DFS', () => {
     it('supports non-contiguous node IDs and directed edges', () => {
         const dfs = new DFS()
-        dfs.set_graph(graphOf(GraphType.digraph, [10, 20, 30], [[10, 20], [20, 30]]))
+        dfs.set_graph(graphOf(GraphType.digraph, [10, 20, 30, 42], [[10, 20], [20, 30]]))
 
         const result = dfs.run_dfs()
 
-        expect(result).toEqual({ status: 'complete', start: 10, order: [10, 20, 30] })
+        expect(result).toEqual({
+            status: 'complete',
+            scope: 'reachable_component',
+            start: 10,
+            order: [10, 20, 30],
+        })
     })
 
     it('returns a structured result for an empty graph', () => {
         const dfs = new DFS()
 
-        expect(dfs.run_dfs()).toEqual({ status: 'empty', start: null, order: [] })
+        expect(dfs.run_dfs()).toEqual({
+            status: 'empty',
+            scope: 'reachable_component',
+            start: null,
+            order: [],
+        })
     })
 })
