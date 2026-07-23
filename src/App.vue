@@ -142,7 +142,7 @@ const algorithms = animateList.map((item, index) => ({
           <span class="brand__descriptor">算法动画</span>
         </a>
 
-        <div class="library-status" aria-label="当前共有 3 个算法演示">
+        <div class="library-status" :aria-label="`当前共有 ${algorithms.length} 个算法演示`">
           <span class="library-status__dot" aria-hidden="true"></span>
           {{ algorithms.length }} 个演示
         </div>
