@@ -1,4 +1,8 @@
 import { defineConfig } from '@playwright/test'
+import { existsSync } from 'node:fs'
+
+const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH
+    || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined)
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -12,7 +16,7 @@ export default defineConfig({
         baseURL: 'http://127.0.0.1:4173',
         browserName: 'chromium',
         launchOptions: {
-            executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || '/usr/bin/chromium',
+            ...(chromiumPath ? { executablePath: chromiumPath } : {}),
             args: ['--no-sandbox'],
         },
         trace: 'retain-on-failure',
