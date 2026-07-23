@@ -271,6 +271,56 @@ export class Graph {
     }
 }
 
+export function randomRange(l: number, r: number): number {
+    return Math.floor(Math.random() * (r - l + 1)) + l
+}
+
+/**
+ * 根据点的数量和边的数量生成无向连通简单图
+ * 前 n-1 条边构成一棵树，剩余边随机生成
+ */
+export function generateGraphByNodeAndEdgeCount(numNodes: number, numEdges: number): { nodes: { data: { id: string } }[], edges: { data: { source: string, target: string } }[] } {
+    const nodes: { data: { id: string } }[] = []
+    const edges: { data: { source: string, target: string } }[] = []
+
+    for (let i = 1; i <= numNodes; i++) {
+        nodes.push({ data: { id: i.toString() } })
+    }
+
+    const maxEdgeCount = numNodes * (numNodes - 1) / 2
+    if (numEdges > maxEdgeCount) {
+        throw new Error(`Cannot generate a graph with ${numNodes} nodes and ${numEdges} edges.`)
+    }
+
+    // 生成一棵树
+    let edgeCount = numNodes - 1
+    for (let i = 2; i <= numNodes; i++) {
+        edges.push({
+            data: { source: i.toString(), target: randomRange(1, i - 1).toString() }
+        })
+    }
+
+    while (edgeCount < numEdges) {
+        const source = randomRange(1, numNodes)
+        const target = randomRange(1, numNodes)
+        if (source === target) continue
+
+        const existingEdge = edges.find(edge => (
+            (edge.data.source === source.toString() && edge.data.target === target.toString()) ||
+            (edge.data.source === target.toString() && edge.data.target === source.toString())
+        ))
+
+        if (!existingEdge) {
+            edges.push({
+                data: { source: source.toString(), target: target.toString() }
+            })
+            edgeCount++
+        }
+    }
+
+    return { nodes, edges }
+}
+
 // 使用示例
 // const graph = new Graph();
 // graph.addEdge('A', 'B', 10);
