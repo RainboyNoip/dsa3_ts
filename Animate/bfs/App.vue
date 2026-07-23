@@ -6,7 +6,7 @@ import AnimationWorkspace from '@/components/animation-workspace.vue'
 import codeEditor from '@/components/code-editor.vue'
 import { read_raw_code } from '@/lib/read_raw_code'
 import { useAnimationPlayer } from '@/animation/useAnimationPlayer'
-import { serializeGraphInput } from '@/animation/graphInput'
+import { DEFAULT_GRAPH_INPUT_LIMITS, serializeGraphInput } from '@/animation/graphInput'
 import rawCode from './code.cpp?raw'
 import defaultGraphData from './input_data/data.json'
 import { BFS } from './bfs'
@@ -17,7 +17,7 @@ import { useCytoscapeRenderer } from '../../src/animation/useCytoscapeRenderer'
 const { code, point_jump_info } = read_raw_code(rawCode)
 const defaultGraphSelectorOptions = defaultGraphData.map((item, index) => ({ label: item.name, value: index }))
 const sampleInput = serializeGraphInput(defaultGraphData[0].nodes, defaultGraphData[0].edges, GraphType.undigraph)
-const inputRules = { allowWeights: false }
+const inputRules = { allowWeights: false, ...DEFAULT_GRAPH_INPUT_LIMITS }
 
 const cyContainer = ref<HTMLElement | null>(null)
 const selectedGraph = ref(0)

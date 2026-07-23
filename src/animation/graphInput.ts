@@ -9,13 +9,28 @@ export type ParsedGraphInput =
 export type GraphInputRules = {
     allowWeights?: boolean
     requireConnected?: boolean
+    maxNodes?: number
+    maxEdges?: number
 }
+
+export const DEFAULT_GRAPH_INPUT_LIMITS = {
+    maxNodes: 80,
+    maxEdges: 200,
+} as const satisfies GraphInputRules
+
+export const FLEURY_GRAPH_INPUT_LIMITS = {
+    maxNodes: 30,
+    maxEdges: 60,
+} as const satisfies GraphInputRules
 
 export function parseGraphInput(
     input: string,
     graphType: GraphType,
     rules: GraphInputRules = {},
 ): ParsedGraphInput {
+    const sizeError = validateDeclaredSize(input, rules)
+    if (sizeError) return { ok: false, error: sizeError }
+
     const graph = new Graph(graphType)
     const result: GraphReadResult = graph.readFromString(input)
     if (!result.ok) return result
@@ -37,6 +52,25 @@ export function parseGraphInput(
     }
 
     return { ok: true, graph }
+}
+
+function validateDeclaredSize(input: string, rules: GraphInputRules): string | null {
+    const header = input
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .find(Boolean)
+        ?.split(/\s+/)
+        .map(Number)
+
+    if (!header || header.length !== 2 || !header.every(Number.isSafeInteger)) return null
+    const [nodeCount, edgeCount] = header
+    if (rules.maxNodes !== undefined && nodeCount > rules.maxNodes) {
+        return `节点数不能超过 ${rules.maxNodes}（当前为 ${nodeCount}）`
+    }
+    if (rules.maxEdges !== undefined && edgeCount > rules.maxEdges) {
+        return `边数不能超过 ${rules.maxEdges}（当前为 ${edgeCount}）`
+    }
+    return null
 }
 
 export function serializeGraphInput(

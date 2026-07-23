@@ -44,6 +44,30 @@ describe('graph input helpers', () => {
         expect(isolated.ok).toBe(true)
     })
 
+    it('rejects declared graph sizes above the configured limits before parsing edges', () => {
+        expect(parseGraphInput('81 0', GraphType.undigraph, {
+            maxNodes: 80,
+            maxEdges: 200,
+        })).toEqual({
+            ok: false,
+            error: '节点数不能超过 80（当前为 81）',
+        })
+
+        expect(parseGraphInput('3 4', GraphType.digraph, {
+            maxNodes: 80,
+            maxEdges: 3,
+        })).toEqual({
+            ok: false,
+            error: '边数不能超过 3（当前为 4）',
+        })
+
+        const atLimit = parseGraphInput('3 2\n1 2\n2 3', GraphType.undigraph, {
+            maxNodes: 3,
+            maxEdges: 2,
+        })
+        expect(atLimit.ok).toBe(true)
+    })
+
     it('serializes Cytoscape data into the dialog format', () => {
         const result = serializeGraphInput(
             [{ data: { id: '1' } }, { data: { id: '2' } }],

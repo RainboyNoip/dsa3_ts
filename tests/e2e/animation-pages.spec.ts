@@ -90,6 +90,19 @@ test.describe('homepage', () => {
 })
 
 test.describe('animation pages', () => {
+    test('shows algorithm limits and blocks oversized graph input', async ({ page }) => {
+        await page.goto('/Animate/fleury/')
+        await page.getByRole('button', { name: '输入数据' }).click()
+
+        await expect(page.getByText(/当前最多支持 30 个节点、60 条边/)).toBeVisible()
+        await page.getByLabel('图数据文本').fill('31 0')
+        await expect(page.getByText('节点数不能超过 30（当前为 31）')).toBeVisible()
+        await expect(page.getByRole('button', { name: '应用数据' })).toBeDisabled()
+
+        await page.getByRole('button', { name: '恢复样例' }).click()
+        await expect(page.getByRole('button', { name: '应用数据' })).toBeEnabled()
+    })
+
     test('supports desktop playback controls on every algorithm page', async ({ page }) => {
         await page.setViewportSize({ width: 1440, height: 900 })
 
