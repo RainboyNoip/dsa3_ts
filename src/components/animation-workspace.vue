@@ -8,6 +8,7 @@ import { GraphType } from '@/lib/graph_ts'
 import type { GraphInputRules } from '@/animation/graphInput'
 import AnimationControls from '@/components/animation-controls.vue'
 import AnimationInputDialog from '@/components/animation-input-dialog.vue'
+import { animationIcons } from '@/components/animation-icons'
 
 type GraphOption = {
     label: string
@@ -149,7 +150,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
           title="返回首页"
           @click="goHome"
         >
-          <Icon icon="fluent:arrow-left-16-regular" width="16" height="16" />
+          <Icon :icon="animationIcons.back" width="16" height="16" />
         </n-button>
         <h1>{{ title }}</h1>
       </div>
@@ -203,7 +204,7 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncMobile))
             title="重新布局"
             @click="emit('relayout')"
           >
-            <Icon icon="fluent:arrow-clockwise-16-regular" width="16" height="16" />
+            <Icon :icon="animationIcons.clockwise" width="16" height="16" />
           </n-button>
         </div>
         <div class="workspace-state-content">

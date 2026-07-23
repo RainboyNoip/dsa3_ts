@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { NButton, NButtonGroup, NInputNumber, NProgress } from 'naive-ui'
 import type { AnimationPlayer } from '@/animation/useAnimationPlayer'
+import { animationIcons } from '@/components/animation-icons'
 
 const props = defineProps<{
     player: AnimationPlayer
@@ -17,6 +18,7 @@ const {
     isAtEnd,
     isPlaying,
 } = props.player
+const playIcon = computed(() => isPlaying.value ? animationIcons.pause : animationIcons.play)
 
 const jumpFrame = ref<number | null>(currentFrame.value)
 
@@ -60,7 +62,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         title="上一帧"
         @click="player.previousFrame"
       >
-        <Icon icon="fluent:previous-16-regular" width="15" height="15" />
+        <Icon :icon="animationIcons.previous" width="15" height="15" />
       </n-button>
       <n-button
         :disabled="isAtEnd"
@@ -69,7 +71,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         @click="player.togglePlay"
       >
         <Icon
-          :icon="isPlaying ? 'fluent:pause-16-regular' : 'fluent:play-16-regular'"
+          :icon="playIcon"
           width="15"
           height="15"
         />
@@ -80,14 +82,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         title="下一帧"
         @click="player.nextFrame"
       >
-        <Icon icon="fluent:next-16-regular" width="15" height="15" />
+        <Icon :icon="animationIcons.next" width="15" height="15" />
       </n-button>
       <n-button
         aria-label="重新开始"
         title="重新开始"
         @click="player.restart"
       >
-        <Icon icon="fluent:arrow-clockwise-16-regular" width="15" height="15" />
+        <Icon :icon="animationIcons.clockwise" width="15" height="15" />
       </n-button>
     </n-button-group>
     <n-input-number
@@ -109,7 +111,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
       title="确认跳转"
       @click="jump"
     >
-      <Icon icon="fluent:arrow-enter-16-regular" width="15" height="15" />
+      <Icon :icon="animationIcons.enter" width="15" height="15" />
     </n-button>
     <n-progress
       class="animation-controls__progress min-w-0 flex-1"
