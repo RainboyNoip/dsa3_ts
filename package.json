@@ -11,6 +11,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "build": "vue-tsc -b && vite build",
+    "size:check": "bun run build/checkBundleSize.ts",
     "preview": "vite preview"
   },
   "dependencies": {

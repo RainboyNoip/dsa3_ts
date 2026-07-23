@@ -33,6 +33,7 @@ bun run test            # Vitest 单元测试
 bun run test:watch      # 监听模式运行单元测试
 bun run test:coverage   # 生成单元测试覆盖率
 bun run build           # 类型检查并构建 dist/
+bun run size:check      # 输出并校验 JavaScript 构建体积
 bun run preview         # 预览生产构建
 bun run test:e2e        # Playwright 浏览器测试
 ```
@@ -49,6 +50,7 @@ PLAYWRIGHT_CHROMIUM_PATH=/path/to/chromium bun run test:e2e
 bun run typecheck
 bun run test
 bun run build
+bun run size:check
 bun run test:e2e
 ```
 
