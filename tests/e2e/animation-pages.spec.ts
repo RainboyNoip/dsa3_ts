@@ -98,7 +98,7 @@ test.describe('animation pages', () => {
         const editorRequests: string[] = []
         page.on('request', (request) => {
             const url = new URL(request.url())
-            if (url.pathname.endsWith('/src/components/code-editor.vue') && url.search === '') {
+            if (url.pathname.endsWith('/src/components/code-editor.vue') && !url.searchParams.has('vue')) {
                 editorRequests.push(request.url())
             }
         })
@@ -112,14 +112,14 @@ test.describe('animation pages', () => {
         expect(editorRequests).toHaveLength(1)
     })
 
-    test('uses a dark code editor and highlights the BFS source line', async ({ page }) => {
+    test('uses a light code editor and highlights the BFS source line', async ({ page }) => {
         const diagnostics = observeDiagnostics(page)
         await page.setViewportSize({ width: 1440, height: 900 })
         await page.goto('/Animate/bfs/')
         await expect(page.locator('.ace_editor')).toBeVisible()
 
         const editorBackground = await page.locator('.ace_editor').evaluate((element) => getComputedStyle(element).backgroundColor)
-        expect(editorBackground).toBe('rgb(39, 40, 34)')
+        expect(editorBackground).toBe('rgb(250, 251, 252)')
 
         await page.getByRole('button', { name: '下一帧' }).click()
         const marker = page.locator('.ace_marker-layer .highlightLine')
