@@ -40,17 +40,17 @@ const expectValidTrail = (graph: Graph, result: HierholzerResult): void => {
 }
 
 describe('Hierholzer Euler trail', () => {
-    it('finds a valid trail on the article sample graph', () => {
+    it('follows the contest short version on the article sample graph', () => {
         const graph = graphOf([1, 2, 3, 4, 5], [[1, 2], [2, 3], [3, 4], [4, 2], [3, 5], [5, 1]])
         const algorithm = new Hierholzer()
         algorithm.set_graph(graph)
 
         const result = algorithm.run()
 
-        // 文章给出的是一种合法输出，答案不唯一；这里锁住确定性实现的输出
+        // 忠实竞赛精简版：s 取最后一个奇点，答案不唯一，这里锁住确定性输出
         expectValidTrail(graph, result)
-        expect(result.start).toBe(2)
-        expect(result.path).toEqual([2, 1, 5, 3, 2, 4, 3])
+        expect(result.start).toBe(3)
+        expect(result.path).toEqual([3, 2, 1, 5, 3, 4, 2])
         expect(result.isCircuit).toBe(false)
         expect(algorithm.get_frame(0).status).toBe('empty')
         expect(algorithm.get_frame(algorithm.frame_cnt).status).toBe('complete')
@@ -80,9 +80,9 @@ describe('Hierholzer Euler trail', () => {
         const result = algorithm.run()
 
         expectValidTrail(graph, result)
-        expect(result.start).toBe(1)
-        expect(result.path[0]).toBe(1)
-        expect(result.path[result.path.length - 1]).toBe(5)
+        expect(result.start).toBe(5)
+        expect(result.path[0]).toBe(5)
+        expect(result.path[result.path.length - 1]).toBe(1)
         expect(result.isCircuit).toBe(false)
     })
 
@@ -108,7 +108,7 @@ describe('Hierholzer Euler trail', () => {
         const loopAlgorithm = new Hierholzer()
         loopAlgorithm.set_graph(loop)
         expectValidTrail(loop, loopAlgorithm.run())
-        expect(loopAlgorithm.get_result()?.path).toHaveLength(4)
+        expect(loopAlgorithm.get_result()?.path).toEqual([3, 2, 2, 1])
     })
 
     it('rejects graphs with more than two odd-degree vertices', () => {
@@ -124,20 +124,28 @@ describe('Hierholzer Euler trail', () => {
             isCircuit: false,
             error: '奇度点个数为 4，不是 0 或 2，无欧拉路',
         })
+
+        // 文章的不可行用例也是在判定期就被拦下（4 个奇点）
+        const articleCase = new Hierholzer()
+        articleCase.set_graph(graphOf([1, 2, 3, 4], [[1, 2], [3, 4]]))
+        const articleResult = articleCase.run()
+        expect(articleResult.status).toBe('no_euler_trail')
+        expect(articleResult.error).toBe('奇度点个数为 4，不是 0 或 2，无欧拉路')
     })
 
-    it('rejects graphs whose non-isolated vertices are disconnected', () => {
+    it('rejects disconnected graphs that pass the degree check', () => {
+        // 三角形全偶度 + 一条独立边：奇点 2 个判定过关，但只能走完 1 条边
         const algorithm = new Hierholzer()
-        algorithm.set_graph(graphOf([1, 2, 3, 4], [[1, 2], [3, 4]]))
+        algorithm.set_graph(graphOf([1, 2, 3, 4, 5], [[1, 2], [2, 3], [3, 1], [4, 5]]))
 
         expect(algorithm.run()).toEqual({
             status: 'no_euler_trail',
-            start: null,
+            start: 5,
             path: [],
             rawPath: [],
             edges: [],
             isCircuit: false,
-            error: '有边的点不在同一个连通块内，无欧拉路',
+            error: '只收集到 2 个点，没有覆盖全部 4 条边，有边的点不连通，无欧拉路',
         })
     })
 
@@ -145,6 +153,11 @@ describe('Hierholzer Euler trail', () => {
         const empty = new Hierholzer()
         empty.set_graph(new Graph(GraphType.undigraph))
         expect(empty.run().status).toBe('empty')
+
+        // 边界：有点但没有任何边，欧拉路是空序列
+        const noEdges = new Hierholzer()
+        noEdges.set_graph(graphOf([1, 2, 3], []))
+        expect(noEdges.run().status).toBe('empty')
 
         const directed = new Hierholzer()
         directed.set_graph(graphOf([1, 2, 3], [[1, 2], [2, 3], [3, 1]], GraphType.digraph))

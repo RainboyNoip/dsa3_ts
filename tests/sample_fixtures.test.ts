@@ -110,7 +110,8 @@ describe('input_data regression fixtures', () => {
             '欧拉路（文章用例）': 'complete',
             '主干与小环': 'complete',
             '欧拉回路': 'complete',
-            '无解：不连通': 'no_euler_trail',
+            '无解：奇度点过多': 'no_euler_trail',
+            '无解：走不完（不连通）': 'no_euler_trail',
         }
         expect(hierholzerSamples.length).toBeGreaterThan(0)
         for (const sample of hierholzerSamples) {

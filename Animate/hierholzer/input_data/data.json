@@ -270,7 +270,7 @@
         ]
     },
     {
-        "name": "无解：不连通",
+        "name": "无解：奇度点过多",
         "nodes": [
             {
                 "data": {
@@ -305,6 +305,66 @@
                 "data": {
                     "source": "3",
                     "target": "4",
+                    "weight": 0
+                }
+            }
+        ]
+    },
+    {
+        "name": "无解：走不完（不连通）",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "2",
+                    "target": "3",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "1",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "5",
                     "weight": 0
                 }
             }

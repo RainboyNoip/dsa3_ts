@@ -26,8 +26,12 @@ const _data = [
         path: path.join(file_dir, 'in3'),
     },
     {
-        name: '无解：不连通',
+        name: '无解：奇度点过多',
         path: path.join(file_dir, 'in4'),
+    },
+    {
+        name: '无解：走不完（不连通）',
+        path: path.join(file_dir, 'in5'),
     },
 ]
 

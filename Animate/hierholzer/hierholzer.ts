@@ -12,7 +12,7 @@ type HierholzerEdge = {
 export type HierholzerFrameStatus = 'running' | 'complete' | 'empty' | 'invalid' | 'no_euler_trail'
 
 export type HierholzerFrame = AnimationFrame<HierholzerFrameStatus> & {
-    /** 当前模拟栈 stack_path，栈顶就是当前所在点 */
+    /** 当前模拟栈 st，栈顶就是当前所在点 */
     stack: NodeId[]
     /** 已经收好的答案序列（构造过程中是后序，反转帧起是正序） */
     path: NodeId[]
@@ -92,50 +92,19 @@ export class Hierholzer {
             return this.finishFailure('invalid_graph', null, 'Hierholzer 动画只支持无向图')
         }
 
-        if (nodeIds.length === 0) {
-            const result: HierholzerResult = {
-                status: 'empty',
-                start: null,
-                path: [],
-                rawPath: [],
-                edges: [],
-                isCircuit: false,
-            }
-            this.result = result
-            this.animation.push(emptyFrame())
-            return result
-        }
-
         const degrees = this.getDegrees()
-        const nonIsolated = nodeIds.filter((nodeId) => (degrees.get(nodeId) ?? 0) > 0)
+        // 对应代码按编号升序扫描：奇点取最后一个，全偶度取第一个有边的点
+        const sortedIds = [...nodeIds].sort((left, right) => left - right)
+        const nonIsolated = sortedIds.filter((nodeId) => (degrees.get(nodeId) ?? 0) > 0)
         const oddNodes = nonIsolated.filter((nodeId) => (degrees.get(nodeId) as number) % 2 === 1)
 
-        // 帧 1：统计度数，圈出所有奇度点
+        // 帧 1：统计奇度点个数（check odd_deg_cnt）
         this.pushFrame({
             status: 'running',
-            jump: this.jump('find start point'),
+            jump: this.jump('check odd_deg_cnt'),
             nodes: this.nodeStates({ colored: oddNodes }),
             log: `统计各点度数，奇度点有 ${oddNodes.length} 个${oddNodes.length > 0 ? `：${oddNodes.join('、')}` : ''}`,
         })
-
-        // 帧 2：忽略孤立点，检查有边的点是否连通
-        const visited = this.collectConnected(nonIsolated)
-        this.pushFrame({
-            status: 'running',
-            jump: this.jump('check connected'),
-            nodes: this.nodeStates({ visited: [...visited], colored: oddNodes }),
-            log: `忽略孤立点，从 ${nonIsolated[0]} 出发能到达 ${visited.size}/${nonIsolated.length} 个有边的点`,
-        })
-        if (!nonIsolated.every((nodeId) => visited.has(nodeId))) {
-            return this.finishFailure(
-                'no_euler_trail',
-                null,
-                '有边的点不在同一个连通块内，无欧拉路',
-                'check connected',
-            )
-        }
-
-        // 帧 3：奇度点个数必须是 0 或 2，并据此选定起点
         if (oddNodes.length !== 0 && oddNodes.length !== 2) {
             return this.finishFailure(
                 'no_euler_trail',
@@ -146,28 +115,52 @@ export class Hierholzer {
             )
         }
 
-        const sortedOdd = [...oddNodes].sort((left, right) => left - right)
-        const fallbackStart = [...nonIsolated].sort((left, right) => left - right)[0]
-        const chosenStart = start ?? (sortedOdd[0] ?? fallbackStart as NodeId)
+        // 边界：没有任何边，欧拉路是空序列（对应代码 s == -1 的边界分支）
+        if (this.allEdges.length === 0) {
+            const result: HierholzerResult = {
+                status: 'empty',
+                start: null,
+                path: [],
+                rawPath: [],
+                edges: [],
+                isCircuit: false,
+            }
+            this.result = result
+            this.animation.push({
+                ...emptyFrame(),
+                status: 'empty',
+                jump: this.jump('find start point'),
+                log: '图中没有任何边，欧拉路是空序列',
+            })
+            return result
+        }
+
+        // 帧 2：选定起点（find start point）
+        const defaultStart = oddNodes.length === 2
+            ? oddNodes[oddNodes.length - 1] as NodeId
+            : nonIsolated[0] as NodeId
+        const chosenStart = start ?? defaultStart
 
         if (!this.graph.hasVertex(chosenStart)) {
-            return this.finishFailure('invalid_start', chosenStart, `起点 ${chosenStart} 不存在`)
+            return this.finishFailure('invalid_start', chosenStart, `起点 ${chosenStart} 不存在`, 'find start point')
         }
         if ((degrees.get(chosenStart) ?? 0) === 0) {
-            return this.finishFailure('invalid_start', chosenStart, `起点 ${chosenStart} 没有连接边`)
+            return this.finishFailure('invalid_start', chosenStart, `起点 ${chosenStart} 没有连接边`, 'find start point')
         }
 
         this.pushFrame({
             status: 'running',
             current: chosenStart,
-            jump: this.jump('check odd_deg_cnt'),
-            nodes: this.nodeStates({ highlight: [chosenStart], colored: sortedOdd }),
-            log: oddNodes.length === 2
-                ? `奇度点为 ${sortedOdd.join('、')}，从奇度点 ${chosenStart} 出发`
-                : `所有点都是偶度，从有边的点 ${chosenStart} 出发`,
+            jump: this.jump('find start point'),
+            nodes: this.nodeStates({ highlight: [chosenStart], colored: oddNodes }),
+            log: start !== undefined
+                ? `按指定的起点 ${chosenStart} 出发`
+                : oddNodes.length === 2
+                    ? `奇点为 ${oddNodes.join('、')}，从奇点 ${chosenStart} 出发`
+                    : `所有点都是偶度，从有边的点 ${chosenStart} 出发`,
         })
 
-        // 帧 4 起：Hierholzer 主循环，沿未使用边前进，无路可走就弹栈收路
+        // 帧 3 起：Hierholzer 主循环，沿未使用边前进，走不动就记点弹栈
         this.current = chosenStart
         this.stack = [chosenStart]
         this.stackEdges = [null]
@@ -187,7 +180,7 @@ export class Hierholzer {
                 this.pushFrame({
                     status: 'running',
                     jump: this.jump('hierholzer pop'),
-                    log: `点 ${popped} 没有未使用边了，弹栈收路：path = [${this.path.join(' ')}]`,
+                    log: `点 ${popped} 走不动了，记点弹栈：path = [${this.path.join(' ')}]`,
                 })
                 continue
             }
@@ -212,20 +205,27 @@ export class Hierholzer {
                 status: 'running',
                 current: v,
                 jump: this.jump('hierholzer step'),
-                log: `当前栈 stack_path = [${this.stack.join(' ')}]`,
+                log: `当前栈 st = [${this.stack.join(' ')}]`,
             })
         }
 
+        // 兜底判定：走不完所有边，说明有边的点不连通（check path size）
         if (this.path.length !== this.allEdges.length + 1) {
             return this.finishFailure(
                 'no_euler_trail',
                 chosenStart,
-                `只收集到 ${this.path.length} 个点，没有覆盖全部 ${this.allEdges.length} 条边，无欧拉路`,
-                'reverse path',
+                `只收集到 ${this.path.length} 个点，没有覆盖全部 ${this.allEdges.length} 条边，有边的点不连通，无欧拉路`,
+                'check path size',
             )
         }
 
-        // 收尾：path 是后序产生的，反转一次才是欧拉路
+        this.pushFrame({
+            status: 'running',
+            jump: this.jump('check path size'),
+            log: `path 长度 ${this.path.length} = 边数 + 1，所有边都走完了`,
+        })
+
+        // 收尾：path 是后序产生的，reverse 后才是欧拉路
         const rawPath = [...this.path]
         const finalPath = [...rawPath].reverse()
         const isCircuit = finalPath[0] === finalPath[finalPath.length - 1]
@@ -236,7 +236,7 @@ export class Hierholzer {
             status: 'running',
             current: chosenStart,
             jump: this.jump('reverse path'),
-            log: `path 是后序产生的，反转得到欧拉${isCircuit ? '回路' : '路'}：${finalPath.join(' ')}`,
+            log: `reverse(path)，反转后得到欧拉${isCircuit ? '回路' : '路'}：${finalPath.join(' ')}`,
             displayPath: finalPath,
         })
 
@@ -277,29 +277,11 @@ export class Hierholzer {
     private getDegrees(): Map<NodeId, number> {
         const degrees = new Map<NodeId, number>(this.graph.node_ids.map((nodeId) => [nodeId, 0]))
         for (const edge of this.allEdges) {
+            // 对应代码：自环给度数贡献 2
             degrees.set(edge.source, (degrees.get(edge.source) ?? 0) + 1)
             degrees.set(edge.target, (degrees.get(edge.target) ?? 0) + 1)
         }
         return degrees
-    }
-
-    private collectConnected(nonIsolated: NodeId[]): Set<NodeId> {
-        const visited = new Set<NodeId>()
-        const start = nonIsolated[0]
-        if (start === undefined) return visited
-        const queue = [start]
-        visited.add(start)
-        while (queue.length > 0) {
-            const current = queue.shift() as NodeId
-            for (const edge of this.adjacency.get(current) ?? []) {
-                const next = edge.source === current ? edge.target : edge.source
-                if (!visited.has(next)) {
-                    visited.add(next)
-                    queue.push(next)
-                }
-            }
-        }
-        return visited
     }
 
     private buildAdjacency(): Map<NodeId, HierholzerEdge[]> {
@@ -312,7 +294,7 @@ export class Hierholzer {
         return adjacency
     }
 
-    /** 对应 code.cpp 里的 while (ptr[u] < g[u].size() && used[...]) ptr[u]++ */
+    /** 对应代码里的 while (cur[u] < g[u].size() && used[...]) cur[u]++ */
     private nextUnusedEdge(u: NodeId): HierholzerEdge | null {
         const list = this.adjacency.get(u) ?? []
         let pointer = this.iter.get(u) ?? 0
