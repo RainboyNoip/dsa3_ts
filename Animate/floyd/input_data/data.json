@@ -1,0 +1,275 @@
+[
+  {
+    "name": "逐层发现更短路径",
+    "nodes": [
+      {
+        "data": {
+          "id": "1"
+        }
+      },
+      {
+        "data": {
+          "id": "2"
+        }
+      },
+      {
+        "data": {
+          "id": "3"
+        }
+      },
+      {
+        "data": {
+          "id": "4"
+        }
+      },
+      {
+        "data": {
+          "id": "5"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e0",
+          "source": "1",
+          "target": "2",
+          "weight": 4
+        }
+      },
+      {
+        "data": {
+          "id": "e1",
+          "source": "1",
+          "target": "3",
+          "weight": 10
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "1",
+          "target": "5",
+          "weight": 15
+        }
+      },
+      {
+        "data": {
+          "id": "e3",
+          "source": "2",
+          "target": "3",
+          "weight": 2
+        }
+      },
+      {
+        "data": {
+          "id": "e4",
+          "source": "2",
+          "target": "4",
+          "weight": 8
+        }
+      },
+      {
+        "data": {
+          "id": "e5",
+          "source": "3",
+          "target": "4",
+          "weight": 3
+        }
+      },
+      {
+        "data": {
+          "id": "e6",
+          "source": "4",
+          "target": "5",
+          "weight": 1
+        }
+      },
+      {
+        "data": {
+          "id": "e7",
+          "source": "5",
+          "target": "2",
+          "weight": 7
+        }
+      }
+    ]
+  },
+  {
+    "name": "负权边，无负环",
+    "nodes": [
+      {
+        "data": {
+          "id": "1"
+        }
+      },
+      {
+        "data": {
+          "id": "2"
+        }
+      },
+      {
+        "data": {
+          "id": "3"
+        }
+      },
+      {
+        "data": {
+          "id": "4"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e0",
+          "source": "1",
+          "target": "2",
+          "weight": 4
+        }
+      },
+      {
+        "data": {
+          "id": "e1",
+          "source": "1",
+          "target": "3",
+          "weight": 5
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "2",
+          "target": "3",
+          "weight": -2
+        }
+      },
+      {
+        "data": {
+          "id": "e3",
+          "source": "3",
+          "target": "4",
+          "weight": 3
+        }
+      },
+      {
+        "data": {
+          "id": "e4",
+          "source": "2",
+          "target": "4",
+          "weight": 8
+        }
+      }
+    ]
+  },
+  {
+    "name": "不可达与孤立顶点",
+    "nodes": [
+      {
+        "data": {
+          "id": "1"
+        }
+      },
+      {
+        "data": {
+          "id": "2"
+        }
+      },
+      {
+        "data": {
+          "id": "3"
+        }
+      },
+      {
+        "data": {
+          "id": "4"
+        }
+      },
+      {
+        "data": {
+          "id": "5"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e0",
+          "source": "1",
+          "target": "2",
+          "weight": 2
+        }
+      },
+      {
+        "data": {
+          "id": "e1",
+          "source": "2",
+          "target": "3",
+          "weight": 3
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "1",
+          "target": "3",
+          "weight": 9
+        }
+      },
+      {
+        "data": {
+          "id": "e3",
+          "source": "4",
+          "target": "5",
+          "weight": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "负环检测",
+    "nodes": [
+      {
+        "data": {
+          "id": "1"
+        }
+      },
+      {
+        "data": {
+          "id": "2"
+        }
+      },
+      {
+        "data": {
+          "id": "3"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e0",
+          "source": "1",
+          "target": "2",
+          "weight": 1
+        }
+      },
+      {
+        "data": {
+          "id": "e1",
+          "source": "2",
+          "target": "3",
+          "weight": -3
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "3",
+          "target": "1",
+          "weight": 1
+        }
+      }
+    ]
+  }
+]

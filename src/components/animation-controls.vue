@@ -11,15 +11,14 @@ const props = defineProps<{
     player: AnimationPlayer
 }>()
 
-const { player } = props
-const {
-    currentFrame,
-    frameCount,
-    progress,
-    isAtStart,
-    isAtEnd,
-    isPlaying,
-} = props.player
+// Resolve the current player when a page switches between algorithm variants.
+const player = computed(() => props.player)
+const currentFrame = computed(() => props.player.currentFrame.value)
+const frameCount = computed(() => props.player.frameCount.value)
+const progress = computed(() => props.player.progress.value)
+const isAtStart = computed(() => props.player.isAtStart.value)
+const isAtEnd = computed(() => props.player.isAtEnd.value)
+const isPlaying = computed(() => props.player.isPlaying.value)
 const playIcon = computed(() => isPlaying.value ? animationIcons.pause : animationIcons.play)
 
 const jumpFrame = ref<number | null>(currentFrame.value)

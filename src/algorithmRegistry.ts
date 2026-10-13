@@ -176,6 +176,12 @@ export const algorithmRegistry = [
     tint: '#edf7f4',
     icon: icons.string,
   },
+  {
+    id: 'floyd', buildName: 'floyd', entry: 'Animate/floyd/index.html', sourceFile: 'floyd.ts',
+    title: 'Floyd 全源最短路', eyebrow: 'ALL-PAIRS SHORTEST PATH',
+    description: '对照三维分层 DP 与二维原地更新，观察距离表和最短路径的变化。',
+    tags: ['动态规划', '带权有向图'], accent: '#7c3aed', tint: '#f5f3ff', icon: icons.layers,
+  },
 ] as const satisfies readonly AlgorithmDefinition[]
 
 export type AlgorithmId = typeof algorithmRegistry[number]['id']

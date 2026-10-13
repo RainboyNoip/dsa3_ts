@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 const algorithmPaths = [
+    '/Animate/floyd/',
     '/Animate/bfs/',
     '/Animate/dfs/',
     '/Animate/bfs_shortest_path/',
@@ -57,8 +58,8 @@ test.describe('homepage', () => {
         await page.goto('/')
         await page.locator('.algorithm-card').first().waitFor()
 
-        await expect(page.locator('.algorithm-card')).toHaveCount(9)
-        await expect(page.locator('.library-status')).toContainText('9 个演示')
+        await expect(page.locator('.algorithm-card')).toHaveCount(10)
+        await expect(page.locator('.library-status')).toContainText('10 个演示')
         await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'light')
         await expectNoHorizontalOverflow(page)
 
@@ -73,7 +74,7 @@ test.describe('homepage', () => {
         await page.setViewportSize({ width: 1440, height: 900 })
         await page.goto('/')
         await expect(page.getByRole('heading', { name: '算法可视化实验室' })).toBeVisible()
-        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(9)
+        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(10)
         await expect(page).toHaveScreenshot('homepage-desktop.png', {
             animations: 'disabled',
             caret: 'hide',
@@ -216,6 +217,9 @@ test.describe('animation pages', () => {
             await expect(previous).toBeEnabled()
             await page.getByRole('button', { name: '重新开始' }).click()
             await expect(previous).toBeDisabled()
+
+            // The negative-edge Floyd sample has 128 frames and exercises its full timeline.
+            if (path === '/Animate/floyd/') await page.getByLabel('选择图数据').selectOption('1')
 
             let playedFrames = 0
             while (await next.isEnabled() && playedFrames < 200) {
