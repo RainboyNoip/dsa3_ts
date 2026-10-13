@@ -6,6 +6,7 @@ import { BFS_SP } from '../Animate/bfs_shortest_path/bfs_sp'
 import { DFS } from '../Animate/dfs/dfs'
 import { Dfsscc } from '../Animate/dfsscc/dfsscc'
 import { fleury } from '../Animate/fleury/fleury'
+import { Hierholzer } from '../Animate/hierholzer/hierholzer'
 import { TarjanCut } from '../Animate/tarjan_cut/tarjan'
 import { topsort } from '../Animate/topsort/topsort'
 import { KMP } from '../Animate/kmp/kmp'
@@ -166,6 +167,30 @@ describe('animation frame invariants', () => {
                 .filter((dfn): dfn is number => dfn !== undefined)
             expect(new Set(removedOrder).size).toBe(removedOrder.length)
             expect(removedOrder.every((dfn) => Number.isInteger(dfn) && dfn > 0)).toBe(true)
+        }
+    })
+
+    it('keeps Hierholzer stack, path, and edge numbering consistent', () => {
+        const graph = graphOf(GraphType.undigraph, [10, 20, 30, 40], [[10, 20], [20, 30], [30, 40], [40, 10], [20, 40]])
+        const algorithm = new Hierholzer()
+        algorithm.set_graph(graph)
+        algorithm.run()
+
+        for (let index = 1; index <= algorithm.frame_cnt; index += 1) {
+            const frame = algorithm.get_frame(index)
+            expectCommonFrameState(frame, graph.node_ids)
+            expect(frame.stack.every((node) => graph.hasVertex(node))).toBe(true)
+            expect(frame.path.every((node) => graph.hasVertex(node))).toBe(true)
+            expect(frame.current === null || graph.hasVertex(frame.current)).toBe(true)
+            if (frame.stack.length > 0) {
+                expect(frame.current).toBe(frame.stack[frame.stack.length - 1])
+            }
+
+            const orders = frame.edges_state
+                .map((edge) => edge.dfn)
+                .filter((dfn): dfn is number => dfn !== undefined)
+            expect(new Set(orders).size).toBe(orders.length)
+            expect(orders.every((order) => Number.isInteger(order) && order > 0)).toBe(true)
         }
     })
 })

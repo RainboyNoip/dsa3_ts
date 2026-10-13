@@ -9,6 +9,8 @@ import { Dfsscc } from '../Animate/dfsscc/dfsscc'
 import sccSamples from '../Animate/dfsscc/input_data/data.json'
 import { fleury } from '../Animate/fleury/fleury'
 import fleurySamples from '../Animate/fleury/input_data/data.json'
+import { Hierholzer } from '../Animate/hierholzer/hierholzer'
+import hierholzerSamples from '../Animate/hierholzer/input_data/data.json'
 import { TarjanCut } from '../Animate/tarjan_cut/tarjan'
 import tarjanSamples from '../Animate/tarjan_cut/input_data/data.json'
 import { topsort } from '../Animate/topsort/topsort'
@@ -134,6 +136,20 @@ const cases: BenchmarkCase[] = [
         samples: fleurySamples,
         createRunner: (graph) => {
             const algorithm = new fleury()
+            algorithm.set_graph(graph)
+            return {
+                run: () => algorithm.run(),
+                get frameCount() { return algorithm.frame_cnt },
+                getFrame: (index) => algorithm.get_frame(index),
+            }
+        },
+    },
+    {
+        label: 'Hierholzer',
+        graphType: GraphType.undigraph,
+        samples: hierholzerSamples,
+        createRunner: (graph) => {
+            const algorithm = new Hierholzer()
             algorithm.set_graph(graph)
             return {
                 run: () => algorithm.run(),

@@ -11,6 +11,7 @@ export type AnimationWorkerAlgorithm =
     | 'dfsscc'
     | 'tarjan_cut'
     | 'fleury'
+    | 'hierholzer'
 
 export type AnimationWorkerRequest = {
     requestId: number

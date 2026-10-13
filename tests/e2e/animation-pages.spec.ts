@@ -8,6 +8,7 @@ const algorithmPaths = [
     '/Animate/dfsscc/',
     '/Animate/tarjan_cut/',
     '/Animate/fleury/',
+    '/Animate/hierholzer/',
     '/Animate/kmp/',
 ]
 
@@ -56,8 +57,8 @@ test.describe('homepage', () => {
         await page.goto('/')
         await page.locator('.algorithm-card').first().waitFor()
 
-        await expect(page.locator('.algorithm-card')).toHaveCount(8)
-        await expect(page.locator('.library-status')).toContainText('8 个演示')
+        await expect(page.locator('.algorithm-card')).toHaveCount(9)
+        await expect(page.locator('.library-status')).toContainText('9 个演示')
         await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'light')
         await expectNoHorizontalOverflow(page)
 
@@ -72,7 +73,7 @@ test.describe('homepage', () => {
         await page.setViewportSize({ width: 1440, height: 900 })
         await page.goto('/')
         await expect(page.getByRole('heading', { name: '算法可视化实验室' })).toBeVisible()
-        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(8)
+        await expect(page.getByRole('link', { name: /打开.*演示/ })).toHaveCount(9)
         await expect(page).toHaveScreenshot('homepage-desktop.png', {
             animations: 'disabled',
             caret: 'hide',
@@ -178,6 +179,8 @@ test.describe('animation pages', () => {
     })
 
     test('supports desktop playback controls on every algorithm page', async ({ page }) => {
+        // 每个算法页都要逐帧点完，页面数量增加后需要放宽总时长
+        test.setTimeout(120_000)
         await page.setViewportSize({ width: 1440, height: 900 })
 
         for (const path of algorithmPaths) {

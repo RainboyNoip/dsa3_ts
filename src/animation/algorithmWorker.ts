@@ -12,6 +12,7 @@ import { topsort } from '../../Animate/topsort/topsort'
 import { Dfsscc } from '../../Animate/dfsscc/dfsscc'
 import { TarjanCut } from '../../Animate/tarjan_cut/tarjan'
 import { fleury } from '../../Animate/fleury/fleury'
+import { Hierholzer } from '../../Animate/hierholzer/hierholzer'
 
 type WorkerScope = {
     onmessage: ((event: MessageEvent<AnimationWorkerRequest>) => void) | null
@@ -79,6 +80,13 @@ function runAlgorithm(request: AnimationWorkerRequest, graph: Graph): AnimationF
         }
         case 'fleury': {
             const algorithm = new fleury()
+            algorithm.set_graph(graph)
+            algorithm.set_pointJumpInfo(request.jumpInfo)
+            algorithm.run()
+            return readFrames(algorithm.frame_cnt, (index) => algorithm.get_frame(index))
+        }
+        case 'hierholzer': {
+            const algorithm = new Hierholzer()
             algorithm.set_graph(graph)
             algorithm.set_pointJumpInfo(request.jumpInfo)
             algorithm.run()

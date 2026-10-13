@@ -29,6 +29,13 @@ export const FLEURY_GRAPH_INPUT_LIMITS = {
     maxRuntimeMs: 1000,
 } as const satisfies GraphInputRules
 
+export const HIERHOLZER_GRAPH_INPUT_LIMITS = {
+    maxNodes: 30,
+    maxEdges: 60,
+    maxFrames: 512,
+    maxRuntimeMs: 1000,
+} as const satisfies GraphInputRules
+
 export function parseGraphInput(
     input: string,
     graphType: GraphType,

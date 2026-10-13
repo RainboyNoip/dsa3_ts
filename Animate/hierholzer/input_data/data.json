@@ -1,0 +1,313 @@
+[
+    {
+        "name": "欧拉路（文章用例）",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "2",
+                    "target": "3",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "4",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "5",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "5",
+                    "target": "1",
+                    "weight": 0
+                }
+            }
+        ]
+    },
+    {
+        "name": "主干与小环",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            },
+            {
+                "data": {
+                    "id": "6"
+                }
+            },
+            {
+                "data": {
+                    "id": "7"
+                }
+            },
+            {
+                "data": {
+                    "id": "8"
+                }
+            },
+            {
+                "data": {
+                    "id": "9"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "2",
+                    "target": "6",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "6",
+                    "target": "7",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "7",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "2",
+                    "target": "3",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "8",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "8",
+                    "target": "9",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "9",
+                    "target": "3",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "4",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "5",
+                    "weight": 0
+                }
+            }
+        ]
+    },
+    {
+        "name": "欧拉回路",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            },
+            {
+                "data": {
+                    "id": "5"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "2",
+                    "target": "3",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "1",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "4",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "4",
+                    "target": "5",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "5",
+                    "target": "3",
+                    "weight": 0
+                }
+            }
+        ]
+    },
+    {
+        "name": "无解：不连通",
+        "nodes": [
+            {
+                "data": {
+                    "id": "1"
+                }
+            },
+            {
+                "data": {
+                    "id": "2"
+                }
+            },
+            {
+                "data": {
+                    "id": "3"
+                }
+            },
+            {
+                "data": {
+                    "id": "4"
+                }
+            }
+        ],
+        "edges": [
+            {
+                "data": {
+                    "source": "1",
+                    "target": "2",
+                    "weight": 0
+                }
+            },
+            {
+                "data": {
+                    "source": "3",
+                    "target": "4",
+                    "weight": 0
+                }
+            }
+        ]
+    }
+]
